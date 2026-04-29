@@ -31,6 +31,28 @@
   .modal { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 22px; border-radius: 30px; transition: 0.3s; z-index: 3000; font-size: 13px; }
   .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Estilo del Slider Horizontal */
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    background: var(--cream-dark);
+    border-radius: 5px;
+    outline: none;
+    margin: 20px 0;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: var(--gold);
+    cursor: pointer;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
 </style>
 </head>
 <body>
@@ -58,7 +80,7 @@
 
   <div id="s-setup" class="screen">
     <div class="card">
-      <h3 id="setup-title" style="margin-bottom:20px">Ajustar Asientos</h3>
+      <h3 id="setup-title" style="margin-bottom:20px">Configurar Asientos</h3>
       
       <div id="edit-name-section" style="display:none; margin-bottom:20px;">
         <label class="label" style="color:var(--ink)">Tu nombre</label>
@@ -66,13 +88,14 @@
       </div>
 
       <div class="form-group">
-        <p style="font-size:14px; margin-bottom:5px;">¿Cuántos invitados van en <b>1ª FILA</b>?</p>
-        <p style="font-size:12px; color:var(--ink-muted); margin-bottom:15px">Tu máximo permitido actual: <span id="e-max-label">4</span></p>
+        <p style="font-size:14px; margin-bottom:5px;">Mueve la barra para elegir cuántos van en <b>1ª FILA</b>:</p>
+        <p style="font-size:12px; color:var(--ink-muted); margin-bottom:5px">Máximo permitido: <span id="e-max-label">4</span></p>
         
-        <input type="range" id="e-slider" min="0" value="0" step="1" style="width:100%; accent-color:var(--gold);" oninput="updateSliderUI(this.value)">
+        <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="updateSliderUI(this.value)">
         
-        <div style="text-align:center; margin:15px 0;">
-          <span id="e-slider-val" style="font-size:48px; font-weight:bold; color:var(--gold);">0</span>
+        <div style="text-align:center;">
+          <span id="e-slider-val" style="font-size:54px; font-weight:bold; color:var(--gold);">0</span>
+          <p style="font-size:13px; color:var(--gold); margin-top:-5px;">asientos seleccionados</p>
         </div>
       </div>
 
@@ -103,7 +126,7 @@
         <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
       </div>
     </div>
-    <h4 style="margin: 20px 0 10px; font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 1px;">Compañeros con huecos</h4>
+    <h4 style="margin: 20px 0 10px; font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 1px;">Intercambios Disponibles</h4>
     <div id="tab-offers"></div>
   </div>
 
@@ -118,12 +141,12 @@
 
 <div class="modal-overlay" id="modal-req">
   <div class="modal">
-    <h3 style="margin-bottom:10px">Pedir huecos</h3>
-    <p id="req-text" style="font-size:13px; color:var(--ink-muted); margin-bottom:15px;"></p>
+    <h3>Pedir huecos</h3>
+    <p id="req-text" style="font-size:13px; color:var(--ink-muted); margin:10px 0;"></p>
     <input type="number" id="modal-qty" class="form-input" min="1" value="1">
     <div style="display:flex; gap:10px;">
       <button class="btn" onclick="document.getElementById('modal-req').classList.remove('active')">Cancelar</button>
-      <button class="btn btn-gold" onclick="sendRequest()">Enviar Pedido</button>
+      <button class="btn btn-gold" onclick="sendRequest()">Enviar</button>
     </div>
   </div>
 </div>
@@ -162,39 +185,39 @@
     const u = await r.json();
     if(!u) return alert("Usuario no encontrado");
     currentUser = u;
-    if(!u.configured) openSetupScreen(true);
-    else goTo('s-main');
-  }
-
-  // FUNCIÓN CRÍTICA: Configura el slider con los límites reales
-  function openSetupScreen(isFirstTime) {
+    
+    // Al entrar, configuramos el slider ANTES de mostrar la pantalla
+    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
     const slider = document.getElementById('e-slider');
-    const maxLabel = document.getElementById('e-max-label');
-    
-    // El máximo es lo menor entre: (Lo que posees) y (Tus invitados totales)
-    const limiteReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
-    
-    slider.max = limiteReal;
-    maxLabel.innerText = limiteReal;
+    slider.max = maxReal;
+    document.getElementById('e-max-label').innerText = maxReal;
 
-    if(isFirstTime) {
+    if(!u.configured) {
       document.getElementById('setup-title').innerText = "¡Bienvenido! Configura tus asientos";
       document.getElementById('edit-name-section').style.display = "none";
       document.getElementById('extra-btns').style.display = "none";
-      slider.value = limiteReal; // Por defecto al máximo la primera vez
+      slider.value = maxReal; 
+      updateSliderUI(maxReal);
+      goTo('s-setup');
     } else {
-      document.getElementById('setup-title').innerText = "Ajustes de Perfil";
-      document.getElementById('edit-name-section').style.display = "block";
-      document.getElementById('extra-btns').style.display = "block";
-      document.getElementById('e-name').value = currentUser.nombre;
-      slider.value = currentUser.front;
+      goTo('s-main');
     }
+  }
+
+  function openEdit() {
+    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
+    const slider = document.getElementById('e-slider');
+    slider.max = maxReal;
+    document.getElementById('e-max-label').innerText = maxReal;
     
+    document.getElementById('setup-title').innerText = "Ajustes de Perfil";
+    document.getElementById('edit-name-section').style.display = "block";
+    document.getElementById('extra-btns').style.display = "block";
+    document.getElementById('e-name').value = currentUser.nombre;
+    slider.value = currentUser.front;
     updateSliderUI(slider.value);
     goTo('s-setup');
   }
-
-  function openEdit() { openSetupScreen(false); }
 
   async function saveConfig() {
     const newFront = parseInt(document.getElementById('e-slider').value);
@@ -206,7 +229,6 @@
     });
     
     showToast("Cambios guardados");
-    // Refrescar datos locales y volver al main
     const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
     currentUser = await r.json();
     goTo('s-main');
@@ -279,12 +301,10 @@
 
   async function handleSol(solicitanteEmail, cantidad, accion) {
     if(accion === 'aceptar') {
-      // 1. Quitar de mi capacidad
       const nuevaCapYo = currentUser.capacidad - cantidad;
       const nuevoFrontYo = Math.min(currentUser.front, nuevaCapYo);
       await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nuevaCapYo, front: nuevoFrontYo }) });
 
-      // 2. Dar capacidad y asientos directos al otro
       const r = await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`);
       const otro = await r.json();
       const nuevaCapOtro = otro.capacidad + cantidad;
