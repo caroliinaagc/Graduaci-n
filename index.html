@@ -19,40 +19,53 @@
   .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; text-align: center; }
   .label { font-size: 10px; text-transform: uppercase; opacity: 0.6; display: block; margin-bottom: 4px; }
   .value { font-size: 22px; font-weight: 600; }
-  .mail-btn { background: none; border: none; font-size: 24px; cursor: pointer; position: relative; color: white; }
-  .notif-dot { position: absolute; top: -5px; right: -5px; background: var(--orange); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid var(--ink); }
   .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; width: 100%; font-family: inherit; transition: 0.2s; text-decoration: none; }
   .btn-gold { background: var(--gold); color: #fff; border: none; }
-  .btn-red { background: #fee2e2; color: var(--red); border: 1px solid #fecaca; }
   .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); margin-bottom: 15px; font-family: inherit; font-size: 15px; }
-  .offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-  .modal-overlay.active { display: flex; }
-  .modal { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; }
-  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 22px; border-radius: 30px; transition: 0.3s; z-index: 3000; font-size: 13px; }
-  .toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* Estilo del Slider Horizontal */
+  /* --- ESTILO DEL SLIDER (BARRA DESLIZANTE) --- */
+  .slider-container { padding: 20px 0; text-align: center; }
+  
   input[type=range] {
     -webkit-appearance: none;
     width: 100%;
-    height: 8px;
-    background: var(--cream-dark);
-    border-radius: 5px;
+    height: 12px;
+    background: #e0dacc;
+    border-radius: 10px;
     outline: none;
-    margin: 20px 0;
+    margin: 25px 0;
   }
+
+  /* El círculo que mueves (Chrome, Safari, Edge) */
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     background: var(--gold);
     cursor: pointer;
     border-radius: 50%;
-    border: 3px solid #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border: 4px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
+
+  /* El círculo que mueves (Firefox) */
+  input[type=range]::-moz-range-thumb {
+    width: 30px;
+    height: 30px;
+    background: var(--gold);
+    cursor: pointer;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .big-number { font-size: 64px; font-weight: bold; color: var(--gold); line-height: 1; }
+  .mail-btn { background: none; border: none; font-size: 24px; cursor: pointer; position: relative; color: white; }
+  .notif-dot { position: absolute; top: -5px; right: -5px; background: var(--orange); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid var(--ink); }
+  .offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 22px; border-radius: 30px; transition: 0.3s; z-index: 3000; font-size: 13px; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -72,7 +85,8 @@
       <h3 style="margin-bottom:15px">Registrar Usuario</h3>
       <input class="form-input" id="r-name" type="text" placeholder="Nombre y Apellidos">
       <input class="form-input" id="r-email" type="email" placeholder="Correo electrónico">
-      <input class="form-input" id="r-total" type="number" value="4" placeholder="Invitados totales">
+      <p style="font-size:12px; margin-bottom:5px; color:gray;">Invitados totales que traes:</p>
+      <input class="form-input" id="r-total" type="number" value="4">
       <button class="btn btn-gold" onclick="doRegister()">Registrar</button>
       <button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Volver</button>
     </div>
@@ -80,31 +94,29 @@
 
   <div id="s-setup" class="screen">
     <div class="card">
-      <h3 id="setup-title" style="margin-bottom:20px">Configurar Asientos</h3>
+      <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Configurar Asientos</h3>
       
       <div id="edit-name-section" style="display:none; margin-bottom:20px;">
         <label class="label" style="color:var(--ink)">Tu nombre</label>
         <input class="form-input" id="e-name" type="text">
       </div>
 
-      <div class="form-group">
-        <p style="font-size:14px; margin-bottom:5px;">Mueve la barra para elegir cuántos van en <b>1ª FILA</b>:</p>
-        <p style="font-size:12px; color:var(--ink-muted); margin-bottom:5px">Máximo permitido: <span id="e-max-label">4</span></p>
+      <div class="slider-container">
+        <p style="font-size:15px;">¿Cuántos invitados van en <b>1ª FILA</b>?</p>
+        <p style="font-size:12px; color:var(--ink-muted);">Límite máximo según tus huecos: <span id="e-max-label">4</span></p>
         
         <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="updateSliderUI(this.value)">
         
-        <div style="text-align:center;">
-          <span id="e-slider-val" style="font-size:54px; font-weight:bold; color:var(--gold);">0</span>
-          <p style="font-size:13px; color:var(--gold); margin-top:-5px;">asientos seleccionados</p>
-        </div>
+        <div class="big-number" id="e-slider-val">0</div>
+        <p style="color:var(--gold); font-weight:600; margin-top:5px;">asientos</p>
       </div>
 
-      <button class="btn btn-gold" onclick="saveConfig()">Guardar y Continuar</button>
+      <button class="btn btn-gold" onclick="saveConfig()">Guardar Asientos</button>
       
-      <div id="extra-btns" style="display:none; margin-top:10px;">
+      <div id="extra-btns" style="display:none; margin-top:15px;">
         <button class="btn" onclick="goTo('s-main')">Cancelar</button>
-        <hr style="margin:25px 0; border:0; border-top:1px solid var(--border);">
-        <button class="btn btn-red" onclick="deleteAccount()">⚠️ Borrar mi cuenta</button>
+        <hr style="margin:20px 0; border:0; border-top:1px solid var(--border);">
+        <button class="btn" style="color:var(--red); border-color:#fecaca;" onclick="deleteAccount()">Borrar cuenta</button>
       </div>
     </div>
   </div>
@@ -126,27 +138,14 @@
         <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
       </div>
     </div>
-    <h4 style="margin: 20px 0 10px; font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 1px;">Intercambios Disponibles</h4>
     <div id="tab-offers"></div>
   </div>
 
   <div id="s-notifs" class="screen">
     <div class="card">
-      <h3 style="margin-bottom:15px">Notificaciones</h3>
+      <h3 style="margin-bottom:15px">Solicitudes</h3>
       <div id="notif-list"></div>
-      <button class="btn" onclick="goTo('s-main')">Atrás</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-req">
-  <div class="modal">
-    <h3>Pedir huecos</h3>
-    <p id="req-text" style="font-size:13px; color:var(--ink-muted); margin:10px 0;"></p>
-    <input type="number" id="modal-qty" class="form-input" min="1" value="1">
-    <div style="display:flex; gap:10px;">
-      <button class="btn" onclick="document.getElementById('modal-req').classList.remove('active')">Cancelar</button>
-      <button class="btn btn-gold" onclick="sendRequest()">Enviar</button>
+      <button class="btn" onclick="goTo('s-main')">Volver</button>
     </div>
   </div>
 </div>
@@ -172,10 +171,9 @@
     const name = document.getElementById('r-name').value.trim();
     const total = parseInt(document.getElementById('r-total').value);
     if(!name || !email || isNaN(total)) return alert("Faltan datos");
-    
     const nuevo = { nombre: name, email: email, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
     await fetch(`${BASE_URL}/alumnos/${email}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
-    showToast("¡Registrado!");
+    showToast("¡Listo! Inicia sesión.");
     goTo('s-login');
   }
 
@@ -185,50 +183,41 @@
     const u = await r.json();
     if(!u) return alert("Usuario no encontrado");
     currentUser = u;
-    
-    // Al entrar, configuramos el slider ANTES de mostrar la pantalla
-    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
-    const slider = document.getElementById('e-slider');
-    slider.max = maxReal;
-    document.getElementById('e-max-label').innerText = maxReal;
-
-    if(!u.configured) {
-      document.getElementById('setup-title').innerText = "¡Bienvenido! Configura tus asientos";
-      document.getElementById('edit-name-section').style.display = "none";
-      document.getElementById('extra-btns').style.display = "none";
-      slider.value = maxReal; 
-      updateSliderUI(maxReal);
-      goTo('s-setup');
-    } else {
-      goTo('s-main');
-    }
+    if(!u.configured) openSetupScreen(true);
+    else goTo('s-main');
   }
 
-  function openEdit() {
-    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
+  function openSetupScreen(isFirstTime) {
     const slider = document.getElementById('e-slider');
+    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
     slider.max = maxReal;
     document.getElementById('e-max-label').innerText = maxReal;
-    
-    document.getElementById('setup-title').innerText = "Ajustes de Perfil";
-    document.getElementById('edit-name-section').style.display = "block";
-    document.getElementById('extra-btns').style.display = "block";
-    document.getElementById('e-name').value = currentUser.nombre;
-    slider.value = currentUser.front;
+
+    if(isFirstTime) {
+      document.getElementById('setup-title').innerText = "¡Bienvenido!";
+      document.getElementById('edit-name-section').style.display = "none";
+      document.getElementById('extra-btns').style.display = "none";
+      slider.value = maxReal;
+    } else {
+      document.getElementById('setup-title').innerText = "Ajustes";
+      document.getElementById('edit-name-section').style.display = "block";
+      document.getElementById('extra-btns').style.display = "block";
+      document.getElementById('e-name').value = currentUser.nombre;
+      slider.value = currentUser.front;
+    }
     updateSliderUI(slider.value);
     goTo('s-setup');
   }
 
+  function openEdit() { openSetupScreen(false); }
+
   async function saveConfig() {
     const newFront = parseInt(document.getElementById('e-slider').value);
     const newName = document.getElementById('e-name').value.trim() || currentUser.nombre;
-    
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
-      method: 'PATCH', 
-      body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
+      method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
     });
-    
-    showToast("Cambios guardados");
+    showToast("Guardado");
     const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
     currentUser = await r.json();
     goTo('s-main');
@@ -244,83 +233,22 @@
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     const cont = document.getElementById('tab-offers');
-    cont.innerHTML = "";
+    cont.innerHTML = "<h4 style='font-size:11px; color:gray; margin-bottom:10px;'>HUECOS DISPONIBLES</h4>";
     Object.values(todos).forEach(a => {
       const libres = a.capacidad - a.front;
       if(a.email !== currentUser.email && libres > 0) {
         const div = document.createElement('div');
         div.className="offer-card";
-        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} huecos libres</small></div><button class="btn btn-gold" style="width:auto; padding:6px 15px;" onclick="openRequest('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
+        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div><button class="btn btn-gold" style="width:auto; padding:6px 15px;" onclick="alert('Enviado a ${a.nombre}')">Pedir</button>`;
         cont.appendChild(div);
       }
     });
-  }
-
-  function openRequest(email, nombre, max) {
-    targetAlumno = email;
-    document.getElementById('req-text').innerText = `${nombre} ofrece ${max} huecos. ¿Cuántos quieres?`;
-    document.getElementById('modal-qty').max = max;
-    document.getElementById('modal-qty').value = 1;
-    document.getElementById('modal-req').classList.add('active');
-  }
-
-  async function sendRequest() {
-    const qty = parseInt(document.getElementById('modal-qty').value);
-    if(qty > parseInt(document.getElementById('modal-qty').max) || qty < 1) return alert("Cantidad inválida");
-    const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: qty };
-    await fetch(`${BASE_URL}/solicitudes/${targetAlumno}/${currentUser.email}.json`, { method: 'PUT', body: JSON.stringify(sol) });
-    document.getElementById('modal-req').classList.remove('active');
-    showToast("Solicitud enviada");
   }
 
   async function checkNotifs() {
     const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
     const data = await r.json();
     document.getElementById('mail-notif').style.display = data ? 'flex' : 'none';
-  }
-
-  async function openNotifs() {
-    goTo('s-notifs');
-    const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
-    const data = await r.json();
-    const list = document.getElementById('notif-list');
-    list.innerHTML = data ? "" : "<p style='text-align:center; color:gray; padding:20px;'>No tienes solicitudes.</p>";
-    if(data) {
-      Object.values(data).forEach(s => {
-        const d = document.createElement('div');
-        d.className = "card";
-        d.innerHTML = `<p><b>${s.desde}</b> solicita ${s.cantidad} huecos.</p>
-        <div style="display:flex; gap:10px; margin-top:15px;">
-          <button class="btn btn-gold" onclick="handleSol('${s.desdeEmail}', ${s.cantidad}, 'aceptar')">Aceptar</button>
-          <button class="btn" style="color:var(--red)" onclick="handleSol('${s.desdeEmail}', null, 'rechazar')">Rechazar</button>
-        </div>`;
-        list.appendChild(d);
-      });
-    }
-  }
-
-  async function handleSol(solicitanteEmail, cantidad, accion) {
-    if(accion === 'aceptar') {
-      const nuevaCapYo = currentUser.capacidad - cantidad;
-      const nuevoFrontYo = Math.min(currentUser.front, nuevaCapYo);
-      await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nuevaCapYo, front: nuevoFrontYo }) });
-
-      const r = await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`);
-      const otro = await r.json();
-      const nuevaCapOtro = otro.capacidad + cantidad;
-      const nuevoFrontOtro = otro.front + cantidad;
-      await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nuevaCapOtro, front: nuevoFrontOtro }) });
-    }
-    await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${solicitanteEmail}.json`, { method: 'DELETE' });
-    showToast(accion === 'aceptar' ? "Intercambio realizado" : "Rechazada");
-    openNotifs();
-  }
-
-  async function deleteAccount() {
-    if(!confirm("¿Borrar cuenta? Perderás todos tus datos.")) return;
-    await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'DELETE' });
-    await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`, { method: 'DELETE' });
-    logout();
   }
 
   function logout() { currentUser = null; goTo('s-login'); }
