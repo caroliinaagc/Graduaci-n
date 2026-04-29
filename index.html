@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cream: #F5F1EA; --ink: #1A1714; --gold: #C4973A; --red: #A32D2D; --orange: #C45A1A; --green: #2D6A4F; --border: rgba(26,23,20,0.12);
+    --cream: #F5F1EA; --ink: #1A1714; --gold: #C4973A; --red: #A32D2D; --orange: #C45A1A; --border: rgba(26,23,20,0.12);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
@@ -65,8 +65,8 @@
       </div>
       <div class="form-group">
         <p style="font-size:14px; margin-bottom:10px">¿Cuántos invitados se sientan en <b>1ª FILA</b>?</p>
-        <p style="font-size:12px; color:var(--ink-muted); margin-bottom:15px">Máximo permitido por tus huecos actuales: <span id="e-max-label">4</span></p>
-        <input type="range" id="e-slider" style="width:100%; accent-color:var(--gold);" oninput="document.getElementById('e-slider-val').innerText=this.value">
+        <p style="font-size:12px; color:var(--ink-muted); margin-bottom:15px">Límite actual: <span id="e-max-label">4</span></p>
+        <input type="range" id="e-slider" min="0" value="4" style="width:100%; accent-color:var(--gold);" oninput="document.getElementById('e-slider-val').innerText=this.value">
         <h1 id="e-slider-val" style="text-align:center; color:var(--gold); margin:10px 0;">4</h1>
       </div>
       <button class="btn btn-gold" onclick="saveConfig()">Guardar Configuración</button>
@@ -100,7 +100,7 @@
     <div class="card">
       <h3 style="margin-bottom:15px">Notificaciones</h3>
       <div id="notif-list"></div>
-      <button class="btn" style="margin-top:15px" onclick="goTo('s-main')">Atrás</button>
+      <button class="btn" onclick="goTo('s-main')">Atrás</button>
     </div>
   </div>
 </div>
@@ -138,10 +138,11 @@
     const total = parseInt(document.getElementById('r-total').value);
     if(!name || !email) return alert("Faltan datos");
     
-    // Crear usuario con configured: false para forzar setup al entrar
-    const nuevo = { nombre: name, email: email, invitadosTotales: total, front: 4, capacidad: 4, configured: false };
+    // Al registrarse, la capacidad es 4 por defecto, pero se limita por el número de invitados reales
+    const capInicial = 4;
+    const nuevo = { nombre: name, email: email, invitadosTotales: total, front: 0, capacidad: capInicial, configured: false };
     await fetch(`${BASE_URL}/alumnos/${email}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
-    showToast("¡Registrado! Inicia sesión ahora.");
+    showToast("¡Registrado!");
     goTo('s-login');
   }
 
@@ -160,7 +161,14 @@
     document.getElementById('group-name-edit').style.display = "none";
     document.getElementById('delete-btn').style.display = "none";
     document.getElementById('delete-hr').style.display = "none";
-    prepareSlider();
+    
+    // Aquí forzamos el límite: el máximo entre su capacidad (4) y sus invitados reales
+    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
+    document.getElementById('e-max-label').innerText = maxReal;
+    document.getElementById('e-slider').max = maxReal;
+    document.getElementById('e-slider').value = maxReal;
+    document.getElementById('e-slider-val').innerText = maxReal;
+    
     goTo('s-setup');
   }
 
@@ -170,22 +178,25 @@
     document.getElementById('delete-btn').style.display = "block";
     document.getElementById('delete-hr').style.display = "block";
     document.getElementById('e-name').value = currentUser.nombre;
-    prepareSlider();
-    goTo('s-setup');
-  }
-
-  function prepareSlider() {
-    document.getElementById('e-max-label').innerText = currentUser.capacidad;
-    document.getElementById('e-slider').max = currentUser.capacidad;
+    
+    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
+    document.getElementById('e-max-label').innerText = maxReal;
+    document.getElementById('e-slider').max = maxReal;
     document.getElementById('e-slider').value = currentUser.front;
     document.getElementById('e-slider-val').innerText = currentUser.front;
+    
+    goTo('s-setup');
   }
 
   async function saveConfig() {
     const newFront = parseInt(document.getElementById('e-slider').value);
     const newName = document.getElementById('e-name').value.trim() || currentUser.nombre;
     
-    if (newFront > currentUser.invitadosTotales) return alert("No puedes ocupar más asientos que invitados traes");
+    // Verificación de seguridad extra
+    const maxPermitido = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
+    if (newFront > maxPermitido) {
+      return alert("No puedes ocupar más asientos de los que tienes permitidos (" + maxPermitido + ")");
+    }
 
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
       method: 'PATCH', 
@@ -193,7 +204,10 @@
     });
     
     showToast("Configuración guardada");
-    doLogin(); // Recargar datos frescos
+    // Recargar datos y entrar
+    const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
+    currentUser = await r.json();
+    goTo('s-main');
   }
 
   async function renderMain() {
@@ -263,16 +277,14 @@
 
   async function handleSol(solicitanteEmail, cantidad, accion) {
     if(accion === 'aceptar') {
-      // 1. Quitar de mi capacidad (yo los doy)
       const nuevaCapYo = currentUser.capacidad - cantidad;
       const nuevoFrontYo = Math.min(currentUser.front, nuevaCapYo);
       await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nuevaCapYo, front: nuevoFrontYo }) });
 
-      // 2. Aumentar capacidad Y 'EN 1ª FILA' del otro (él los recibe y ocupa)
       const r = await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`);
       const otro = await r.json();
       const nuevaCapOtro = otro.capacidad + cantidad;
-      const nuevoFrontOtro = otro.front + cantidad; // SE SUMAN AUTOMÁTICAMENTE A SU VARIABLE 'EN 1ª FILA'
+      const nuevoFrontOtro = otro.front + cantidad;
       await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nuevaCapOtro, front: nuevoFrontOtro }) });
     }
     await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${solicitanteEmail}.json`, { method: 'DELETE' });
