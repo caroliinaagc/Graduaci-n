@@ -21,7 +21,7 @@
   .value { font-size: 22px; font-weight: 600; }
   .mail-btn { background: none; border: none; font-size: 24px; cursor: pointer; position: relative; color: white; }
   .notif-dot { position: absolute; top: -5px; right: -5px; background: var(--orange); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid var(--ink); }
-  .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; width: 100%; font-family: inherit; transition: 0.2s; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; width: 100%; font-family: inherit; transition: 0.2s; text-decoration: none; }
   .btn-gold { background: var(--gold); color: #fff; border: none; }
   .btn-red { background: #fee2e2; color: var(--red); border: 1px solid #fecaca; }
   .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); margin-bottom: 15px; font-family: inherit; font-size: 15px; }
@@ -58,20 +58,31 @@
 
   <div id="s-setup" class="screen">
     <div class="card">
-      <h3 id="setup-title" style="margin-bottom:20px">Configurar Asientos</h3>
-      <div class="form-group" id="group-name-edit" style="display:none; margin-bottom:20px;">
+      <h3 id="setup-title" style="margin-bottom:20px">Ajustar Asientos</h3>
+      
+      <div id="edit-name-section" style="display:none; margin-bottom:20px;">
         <label class="label" style="color:var(--ink)">Tu nombre</label>
         <input class="form-input" id="e-name" type="text">
       </div>
+
       <div class="form-group">
-        <p style="font-size:14px; margin-bottom:10px">¿Cuántos invitados se sientan en <b>1ª FILA</b>?</p>
-        <p style="font-size:12px; color:var(--ink-muted); margin-bottom:15px">Límite actual: <span id="e-max-label">4</span></p>
-        <input type="range" id="e-slider" min="0" value="4" style="width:100%; accent-color:var(--gold);" oninput="document.getElementById('e-slider-val').innerText=this.value">
-        <h1 id="e-slider-val" style="text-align:center; color:var(--gold); margin:10px 0;">4</h1>
+        <p style="font-size:14px; margin-bottom:5px;">¿Cuántos invitados van en <b>1ª FILA</b>?</p>
+        <p style="font-size:12px; color:var(--ink-muted); margin-bottom:15px">Tu máximo permitido actual: <span id="e-max-label">4</span></p>
+        
+        <input type="range" id="e-slider" min="0" value="0" step="1" style="width:100%; accent-color:var(--gold);" oninput="updateSliderUI(this.value)">
+        
+        <div style="text-align:center; margin:15px 0;">
+          <span id="e-slider-val" style="font-size:48px; font-weight:bold; color:var(--gold);">0</span>
+        </div>
       </div>
-      <button class="btn btn-gold" onclick="saveConfig()">Guardar Configuración</button>
-      <hr id="delete-hr" style="margin:25px 0; border:0; border-top:1px solid var(--border); display:none;">
-      <button id="delete-btn" class="btn btn-red" onclick="deleteAccount()" style="display:none;">⚠️ Borrar mi cuenta</button>
+
+      <button class="btn btn-gold" onclick="saveConfig()">Guardar y Continuar</button>
+      
+      <div id="extra-btns" style="display:none; margin-top:10px;">
+        <button class="btn" onclick="goTo('s-main')">Cancelar</button>
+        <hr style="margin:25px 0; border:0; border-top:1px solid var(--border);">
+        <button class="btn btn-red" onclick="deleteAccount()">⚠️ Borrar mi cuenta</button>
+      </div>
     </div>
   </div>
 
@@ -92,7 +103,7 @@
         <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
       </div>
     </div>
-    <h4 style="margin: 20px 0 10px; font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 1px;">Intercambios Disponibles</h4>
+    <h4 style="margin: 20px 0 10px; font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 1px;">Compañeros con huecos</h4>
     <div id="tab-offers"></div>
   </div>
 
@@ -122,7 +133,6 @@
 <script>
   const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com";
   let currentUser = null;
-  let targetAlumno = null;
 
   function goTo(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -132,15 +142,15 @@
 
   function showToast(m) { const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
 
+  function updateSliderUI(val) { document.getElementById('e-slider-val').innerText = val; }
+
   async function doRegister() {
     const email = document.getElementById('r-email').value.toLowerCase().replace(/\./g, '_');
     const name = document.getElementById('r-name').value.trim();
     const total = parseInt(document.getElementById('r-total').value);
-    if(!name || !email) return alert("Faltan datos");
+    if(!name || !email || isNaN(total)) return alert("Faltan datos");
     
-    // Al registrarse, la capacidad es 4 por defecto, pero se limita por el número de invitados reales
-    const capInicial = 4;
-    const nuevo = { nombre: name, email: email, invitadosTotales: total, front: 0, capacidad: capInicial, configured: false };
+    const nuevo = { nombre: name, email: email, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
     await fetch(`${BASE_URL}/alumnos/${email}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
     showToast("¡Registrado!");
     goTo('s-login');
@@ -152,59 +162,51 @@
     const u = await r.json();
     if(!u) return alert("Usuario no encontrado");
     currentUser = u;
-    if(!u.configured) openFirstSetup();
+    if(!u.configured) openSetupScreen(true);
     else goTo('s-main');
   }
 
-  function openFirstSetup() {
-    document.getElementById('setup-title').innerText = "Bienvenido, configura tus asientos";
-    document.getElementById('group-name-edit').style.display = "none";
-    document.getElementById('delete-btn').style.display = "none";
-    document.getElementById('delete-hr').style.display = "none";
+  // FUNCIÓN CRÍTICA: Configura el slider con los límites reales
+  function openSetupScreen(isFirstTime) {
+    const slider = document.getElementById('e-slider');
+    const maxLabel = document.getElementById('e-max-label');
     
-    // Aquí forzamos el límite: el máximo entre su capacidad (4) y sus invitados reales
-    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
-    document.getElementById('e-max-label').innerText = maxReal;
-    document.getElementById('e-slider').max = maxReal;
-    document.getElementById('e-slider').value = maxReal;
-    document.getElementById('e-slider-val').innerText = maxReal;
+    // El máximo es lo menor entre: (Lo que posees) y (Tus invitados totales)
+    const limiteReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
     
+    slider.max = limiteReal;
+    maxLabel.innerText = limiteReal;
+
+    if(isFirstTime) {
+      document.getElementById('setup-title').innerText = "¡Bienvenido! Configura tus asientos";
+      document.getElementById('edit-name-section').style.display = "none";
+      document.getElementById('extra-btns').style.display = "none";
+      slider.value = limiteReal; // Por defecto al máximo la primera vez
+    } else {
+      document.getElementById('setup-title').innerText = "Ajustes de Perfil";
+      document.getElementById('edit-name-section').style.display = "block";
+      document.getElementById('extra-btns').style.display = "block";
+      document.getElementById('e-name').value = currentUser.nombre;
+      slider.value = currentUser.front;
+    }
+    
+    updateSliderUI(slider.value);
     goTo('s-setup');
   }
 
-  function openEdit() {
-    document.getElementById('setup-title').innerText = "Ajustes de Perfil";
-    document.getElementById('group-name-edit').style.display = "block";
-    document.getElementById('delete-btn').style.display = "block";
-    document.getElementById('delete-hr').style.display = "block";
-    document.getElementById('e-name').value = currentUser.nombre;
-    
-    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
-    document.getElementById('e-max-label').innerText = maxReal;
-    document.getElementById('e-slider').max = maxReal;
-    document.getElementById('e-slider').value = currentUser.front;
-    document.getElementById('e-slider-val').innerText = currentUser.front;
-    
-    goTo('s-setup');
-  }
+  function openEdit() { openSetupScreen(false); }
 
   async function saveConfig() {
     const newFront = parseInt(document.getElementById('e-slider').value);
     const newName = document.getElementById('e-name').value.trim() || currentUser.nombre;
     
-    // Verificación de seguridad extra
-    const maxPermitido = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
-    if (newFront > maxPermitido) {
-      return alert("No puedes ocupar más asientos de los que tienes permitidos (" + maxPermitido + ")");
-    }
-
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
       method: 'PATCH', 
       body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
     });
     
-    showToast("Configuración guardada");
-    // Recargar datos y entrar
+    showToast("Cambios guardados");
+    // Refrescar datos locales y volver al main
     const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
     currentUser = await r.json();
     goTo('s-main');
@@ -277,10 +279,12 @@
 
   async function handleSol(solicitanteEmail, cantidad, accion) {
     if(accion === 'aceptar') {
+      // 1. Quitar de mi capacidad
       const nuevaCapYo = currentUser.capacidad - cantidad;
       const nuevoFrontYo = Math.min(currentUser.front, nuevaCapYo);
       await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nuevaCapYo, front: nuevoFrontYo }) });
 
+      // 2. Dar capacidad y asientos directos al otro
       const r = await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`);
       const otro = await r.json();
       const nuevaCapOtro = otro.capacidad + cantidad;
@@ -293,7 +297,7 @@
   }
 
   async function deleteAccount() {
-    if(!confirm("¿Borrar cuenta? Perderás tus datos.")) return;
+    if(!confirm("¿Borrar cuenta? Perderás todos tus datos.")) return;
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'DELETE' });
     await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`, { method: 'DELETE' });
     logout();
