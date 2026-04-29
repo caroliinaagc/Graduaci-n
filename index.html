@@ -219,6 +219,7 @@
 
   async function doLogin() {
     const idKey = document.getElementById('l-id').value.trim();
+    if(!idKey) return alert("Escribe tu identificador");
     const r = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
     const u = await r.json();
     if(!u) return alert("Identificador no encontrado");
@@ -311,7 +312,16 @@
     const n = parseInt(prompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo: ${maxPermitido})`, "1"));
     if(n > 0 && n <= maxPermitido) {
         const solId = "sol_" + Date.now();
-        const sol = { desde: currentUser.nombre, desdeId: currentUser.id, cantidad: n, id: solId, status: 'pending', paraNombre: targetNombre, targetId: targetId, unread: true };
+        const sol = { 
+          desde: currentUser.nombre, 
+          desdeId: currentUser.id, 
+          cantidad: n, 
+          id: solId, 
+          status: 'pending', 
+          paraNombre: targetNombre, 
+          targetId: targetId, 
+          unread: true 
+        };
         await fetch(`${BASE_URL}/solicitudes/${targetId}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
         await fetch(`${BASE_URL}/solicitudes/${currentUser.id}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
         showToast("Enviada"); renderMain(); checkNotifs();
@@ -339,22 +349,22 @@
       const d = document.createElement('div'); d.className = "card notif-card";
       
       if (s.desdeId !== currentUser.id) {
-          // RECIBIDA (Soy Marta)
+          // RECIBIDA (Soy quien acepta/rechaza)
           d.innerHTML = `<p><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
             <div style="display:flex; gap:8px; margin-top:10px">
               <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeId}', ${s.cantidad}, 'accepted', '${s.desde}')">Aceptar</button>
               <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeId}', ${s.cantidad}, 'rejected', '${s.desde}')">Rechazar</button>
             </div>`;
       } else if (s.status === 'pending') {
-          // ENVIADA - ESPERANDO (Soy Carolina)
+          // ENVIADA - ESPERANDO
           d.classList.add(s.unread ? 'notif-pending-unread' : 'notif-pending-read');
           d.innerHTML = `<p style="text-align:center">Esperando a <b>${s.paraNombre}</b> por ${s.cantidad} hueco(s)...</p>`;
           if(s.unread) d.innerHTML += `<button class="btn" style="margin-top:10px" onclick="marcarLeido('${id}')">Marcar como leído</button>`;
       } else {
-          // FEEDBACK (Soy Carolina y ya me respondieron)
+          // FEEDBACK (Aceptado o Rechazado)
           const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
           const color = s.status === 'accepted' ? 'var(--green)' : 'var(--red)';
-          d.innerHTML = `<p style="text-align:center; color:${color}; font-weight:600;"><b>${s.paraNombre}</b> ${msg} tu solicitud.</p>
+          d.innerHTML = `<p style="text-align:center; color:${color}; font-weight:600;"><b>${s.paraNombre}</b> ${msg} tu solicitud de ${s.cantidad} hueco(s).</p>
             <button class="btn btn-gold" style="margin-top:10px" onclick="borrarSol('${id}')">Aceptar</button>`;
       }
       list.appendChild(d);
@@ -367,6 +377,12 @@
       const solicitor = await rS.json();
       const neededBySolicitor = solicitor.invitadosTotales - solicitor.front;
 
+      if(neededBySolicitor <= 0) {
+        alert("El alumno ya completó su cupo.");
+        await fetch(`${BASE_URL}/solicitudes/${currentUser.id}/${id}.json`, { method: 'DELETE' });
+        return openNotifs();
+      }
+
       let finalCant = cantPedida;
       if (cantPedida > neededBySolicitor) {
           if(!confirm(`El número de huecos solicitados supera el cupo máximo de ${solicitanteNombre}.\n\nSolo le faltan ${neededBySolicitor} hueco(s). ¿Aceptar dándole solo ${neededBySolicitor}?`)) return;
@@ -377,39 +393,49 @@
       const me = await rC.json();
       if((me.capacidad - me.front) < finalCant) return alert("No tienes suficientes huecos.");
 
+      // Cambios numéricos
       await fetch(`${BASE_URL}/alumnos/${currentUser.id}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: me.capacidad - finalCant, front: Math.min(me.front, me.capacidad - finalCant) }) });
       const newFrontOther = solicitor.front + finalCant;
       const newCapOther = solicitor.capacidad + finalCant;
       await fetch(`${BASE_URL}/alumnos/${solicitanteId}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: newCapOther, front: newFrontOther }) });
 
-      // Si el otro se llena, limpiar todas sus otras solicitudes
+      // Feedback para el solicitante
+      await fetch(`${BASE_URL}/solicitudes/${solicitanteId}/${id}.json`, { 
+          method: 'PUT', 
+          body: JSON.stringify({ 
+            status: 'accepted', 
+            unread: true, 
+            paraNombre: currentUser.nombre, 
+            cantidad: finalCant,
+            desdeId: solicitanteId,
+            targetId: currentUser.id
+          }) 
+      });
+
+      // Si el otro completó cupo, limpiar todas sus solicitudes pendientes enviadas
       if (newFrontOther >= solicitor.invitadosTotales) {
           const rAllSols = await fetch(`${BASE_URL}/solicitudes/${solicitanteId}.json`);
           const allSols = await rAllSols.json();
           if(allSols) {
               for (let sKey in allSols) {
-                  if (allSols[sKey].desdeId === solicitor.id && allSols[sKey].status === 'pending') {
+                  if (allSols[sKey].desdeId === solicitanteId && allSols[sKey].status === 'pending') {
                       await fetch(`${BASE_URL}/solicitudes/${allSols[sKey].targetId}/${sKey}.json`, { method: 'DELETE' });
                       await fetch(`${BASE_URL}/solicitudes/${solicitanteId}/${sKey}.json`, { method: 'DELETE' });
                   }
               }
           }
       }
-      
-      // Feedback para el solicitante con DATOS COMPLETOS
-      await fetch(`${BASE_URL}/solicitudes/${solicitanteId}/${id}.json`, { 
-          method: 'PATCH', 
-          body: JSON.stringify({ status: 'accepted', unread: true, paraNombre: currentUser.nombre, cantidad: finalCant }) 
-      });
+      showToast("Intercambio realizado");
     } else {
-      // Rechazo con DATOS COMPLETOS
+      // Rechazo
       await fetch(`${BASE_URL}/solicitudes/${solicitanteId}/${id}.json`, { 
           method: 'PATCH', 
-          body: JSON.stringify({ status: 'rejected', unread: true, paraNombre: currentUser.nombre }) 
+          body: JSON.stringify({ status: 'rejected', unread: true, paraNombre: currentUser.nombre, cantidad: cantPedida }) 
       });
+      showToast("Solicitud rechazada");
     }
     
-    // Borrar de mi buzón (Marta)
+    // Borrar de mi buzón
     await fetch(`${BASE_URL}/solicitudes/${currentUser.id}/${id}.json`, { method: 'DELETE' });
     openNotifs();
   }
@@ -424,17 +450,9 @@
     openNotifs();
   }
 
-  function logout() { 
-    document.getElementById('l-id').value = ""; 
-    currentUser = null; 
-    goTo('s-login'); 
-  }
-
+  function logout() { document.getElementById('l-id').value = ""; currentUser = null; goTo('s-login'); }
   async function deleteAccount() {
-    if(confirm("¿Borrar?")) { 
-      await fetch(`${BASE_URL}/alumnos/${currentUser.id}.json`, { method: 'DELETE' }); 
-      logout(); 
-    }
+    if(confirm("¿Borrar?")) { await fetch(`${BASE_URL}/alumnos/${currentUser.id}.json`, { method: 'DELETE' }); logout(); }
   }
 </script>
 </body>
