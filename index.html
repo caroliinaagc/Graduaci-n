@@ -15,41 +15,56 @@
   .screen { display: none; } .screen.active { display: block; }
   .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
   
+  /* FORMULARIOS */
   .form-group { margin-bottom: 18px; text-align: left; }
   .form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; color: var(--ink); }
-  .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); font-family: inherit; font-size: 15px; }
+  .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); font-family: inherit; font-size: 15px; background: #fff; }
 
+  /* TARJETA PERSONAL */
   .my-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 22px; margin-bottom: 16px; position: relative; }
   .name-row { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
   
+  /* BOTÓN SOBRE VISUAL */
   .mail-btn { 
     background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); 
     width: 48px; height: 48px; border-radius: 50%; cursor: pointer; 
     display: flex; align-items: center; justify-content: center; position: relative;
+    transition: 0.3s;
   }
-  .mail-btn svg { width: 22px; height: 22px; fill: white; }
-  .notif-dot { position: absolute; top: 0px; right: 0px; background: var(--orange); width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--ink); display: none; }
+  .mail-btn:hover { background: rgba(255,255,255,0.2); }
+  .mail-btn svg { width: 24px; height: 24px; fill: white; }
+  .notif-dot { 
+    position: absolute; top: 0px; right: 0px; 
+    background: var(--orange); width: 14px; height: 14px; 
+    border-radius: 50%; border: 2.5px solid var(--ink); display: none; 
+  }
 
+  /* ESTADÍSTICAS TARJETA */
   .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin-bottom: 20px; }
   .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; line-height: 1.2; height: 35px; display: flex; align-items: center; justify-content: center; }
   .stat-val { font-size: 20px; font-weight: 600; margin-top: 5px; }
 
+  /* SLIDER (BARRA HORIZONTAL) */
   .slider-box { padding: 10px 0; text-align: center; }
   input[type=range] { -webkit-appearance: none; width: 100%; height: 10px; background: #ddd; border-radius: 50px; outline: none; margin: 25px 0; }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 30px; height: 30px; background: var(--gold); cursor: pointer; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
   .big-num { font-size: 60px; font-weight: bold; color: var(--gold); line-height: 1; }
 
+  /* BOTONES */
   .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; width: 100%; font-family: inherit; transition: 0.2s; }
   .btn-gold { background: var(--gold); color: #fff; border: none; }
   .btn-red { background: #fee2e2; color: var(--red); border: 1px solid #fecaca; }
+
+  /* MENSAJES DE ESTADO */
+  .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
+  .info-box { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
+  .warning-box { background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; display: none; }
   
   .offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 22px; border-radius: 30px; transition: 0.3s; z-index: 6000; font-size: 13px; }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
-  .warning-box { background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; display: none; }
-  .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
-  .info-box { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
+  /* MODAL CONFIRMACIÓN */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
   .modal-overlay.active { display: flex; }
 </style>
@@ -95,7 +110,7 @@
 
   <div id="s-setup" class="screen">
     <div class="card">
-      <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Ajustes de Perfil</h3>
+      <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Configurar Asientos</h3>
       <div id="edit-name-section" style="display:none; margin-bottom:20px;">
         <label class="form-label">Tu nombre</label>
         <input class="form-input" id="e-name" type="text">
@@ -107,12 +122,12 @@
         <p style="font-size:14px;">¿Cuántos invitados vas a sentar delante?</p>
         <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="handleSliderChange(this.value)">
         <div class="big-num" id="e-slider-val">0</div>
-        <p style="font-size:12px; color:gray">Capacidad total para gestionar: <span id="e-max-label">4</span> huecos.</p>
+        <p style="font-size:12px; color:gray">Tienes acceso a gestionar <span id="e-max-label">4</span> huecos en total.</p>
       </div>
       <button class="btn btn-gold" id="btn-save-config" onclick="saveConfig()">Guardar Cambios</button>
       <div id="extra-btns" style="display:none; margin-top:15px;">
         <button class="btn" onclick="goTo('s-main')">Volver</button>
-        <button class="btn btn-red" style="margin-top:20px" onclick="deleteAccount()">Borrar mi cuenta</button>
+        <button class="btn btn-red" style="margin-top:20px" onclick="deleteAccount()">Borrar cuenta</button>
       </div>
     </div>
   </div>
@@ -121,7 +136,7 @@
     <div class="my-card">
       <div class="name-row">
         <span id="mc-name">...</span>
-        <button class="mail-btn" onclick="goTo('s-notifs')">
+        <button class="mail-btn" onclick="openNotifs()">
           <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
           <div id="mail-notif" class="notif-dot"></div>
         </button>
@@ -136,7 +151,6 @@
         <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
       </div>
     </div>
-    
     <div id="interchange-section"></div>
   </div>
 
@@ -167,7 +181,7 @@
     const name = document.getElementById('r-name').value.trim();
     const email = document.getElementById('r-email').value.trim();
     const total = document.getElementById('r-total').value;
-    if(!name || !email || !total) return alert("Faltan datos");
+    if(!name || !email || !total) return alert("Completa todos los campos");
     document.getElementById('conf-name').innerText = name;
     document.getElementById('conf-email').innerText = email;
     document.getElementById('conf-total').innerText = total;
@@ -235,10 +249,7 @@
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
       method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
     });
-    showToast("Guardado con éxito");
-    const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
-    currentUser = await r.json();
-    goTo('s-main');
+    showToast("Guardado"); goTo('s-main');
   }
 
   async function renderMain() {
@@ -253,27 +264,16 @@
     const container = document.getElementById('interchange-section');
     container.innerHTML = "";
 
-    // 1. CONDICIÓN: CUPO COMPLETO
     if (currentUser.front >= currentUser.invitadosTotales) {
-        container.innerHTML = `
-            <div class="success-box">
-                <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-                <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-            </div>`;
+        container.innerHTML = `<div class="success-box"><p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p><p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p></div>`;
         return;
     }
 
-    // 2. CONDICIÓN: TIENE HUECOS PROPIOS SIN USAR
     if (libresMios > 0) {
-        container.innerHTML = `
-            <div class="info-box">
-                <p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
-                <p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
-            </div>`;
+        container.innerHTML = `<div class="info-box"><p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p><p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros.</p></div>`;
         return;
     }
 
-    // 3. MOSTRAR LISTA DE COMPAÑEROS SI NO SE CUMPLEN LAS ANTERIORES
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     container.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; margin-bottom:10px; text-transform: uppercase;'>Compañeros con huecos</h4>";
@@ -283,9 +283,7 @@
       if(a.email !== currentUser.email && libres > 0) {
         const div = document.createElement('div');
         div.className="offer-card";
-        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div>
-                         <button class="btn btn-gold" style="width:auto; padding:6px 15px;" 
-                         onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
+        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div><button class="btn btn-gold" style="width:auto; padding:6px 15px;" onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
         container.appendChild(div);
       }
     });
@@ -294,7 +292,7 @@
   async function enviarSolicitud(targetEmail, targetNombre, maxDelOtro) {
     const necesito = currentUser.invitadosTotales - currentUser.front;
     const maxPermitido = Math.min(maxDelOtro, necesito);
-    const n = parseInt(prompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo: ${maxPermitido})`, "1"));
+    const n = parseInt(prompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo permitido: ${maxPermitido})`, "1"));
     if(n > 0 && n <= maxPermitido) {
         const solId = Date.now();
         const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: n };
@@ -304,18 +302,21 @@
   }
 
   async function checkNotifs() {
+    if(!currentUser) return;
     const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
     const data = await r.json();
-    document.getElementById('mail-notif').style.display = data ? 'block' : 'none';
+    document.getElementById('mail-notif').style.display = (data && Object.keys(data).length > 0) ? 'block' : 'none';
   }
 
   async function openNotifs() {
+    if(!currentUser) return;
     goTo('s-notifs');
+    const list = document.getElementById('notif-list');
+    list.innerHTML = "<p style='text-align:center; color:gray;'>Cargando...</p>";
     const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
     const data = await r.json();
-    const list = document.getElementById('notif-list');
     list.innerHTML = "";
-    if(!data) { list.innerHTML = "<p style='color:gray; text-align:center;'>No hay solicitudes.</p>"; return; }
+    if(!data || Object.keys(data).length === 0) { list.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>No hay solicitudes.</p>"; return; }
     Object.keys(data).forEach(id => {
       const s = data[id];
       const d = document.createElement('div'); d.className = "card";
