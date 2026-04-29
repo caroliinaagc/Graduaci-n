@@ -15,31 +15,22 @@
   .screen { display: none; } .screen.active { display: block; }
   .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
   
-  /* FORMULARIOS */
   .form-group { margin-bottom: 18px; text-align: left; }
   .form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; color: var(--ink); }
   .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); font-family: inherit; font-size: 15px; }
 
-  /* TARJETA PERSONAL */
   .my-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 22px; margin-bottom: 16px; position: relative; }
   .name-row { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
   
-  /* BOTÓN SOBRE VISUAL */
-  .mail-btn { 
-    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); 
-    width: 48px; height: 48px; border-radius: 50%; cursor: pointer; 
-    display: flex; align-items: center; justify-content: center; position: relative;
-  }
+  .mail-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
   .mail-btn svg { width: 24px; height: 24px; fill: white; }
   .notif-dot { position: absolute; top: 2px; right: 2px; background: var(--orange); width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); display: none; }
 
-  /* SLIDER */
   .slider-box { padding: 20px 0; text-align: center; }
-  input[type=range] { -webkit-appearance: none; width: 100%; height: 10px; background: #ddd; border-radius: 5px; outline: none; margin: 25px 0; }
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 10px; background: #ddd; border-radius: 50px; outline: none; margin: 25px 0; }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 30px; height: 30px; background: var(--gold); cursor: pointer; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
   .big-num { font-size: 60px; font-weight: bold; color: var(--gold); line-height: 1; }
 
-  /* BOTONES */
   .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; width: 100%; font-family: inherit; }
   .btn-gold { background: var(--gold); color: #fff; border: none; }
   .btn-red { background: #fee2e2; color: var(--red); border: 1px solid #fecaca; }
@@ -48,8 +39,16 @@
   .stat-label { font-size: 10px; text-transform: uppercase; opacity: 0.6; margin-bottom: 4px; }
   .stat-val { font-size: 22px; font-weight: 600; }
   .offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 22px; border-radius: 30px; transition: 0.3s; z-index: 3000; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 22px; border-radius: 30px; transition: 0.3s; z-index: 4000; }
   .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Estilo para avisos */
+  .warning-box { background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; display: none; }
+  
+  /* Modal de confirmación registro */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
+  .modal-overlay.active { display: flex; }
+  .confirm-card { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 400px; text-align: left; }
 </style>
 </head>
 <body>
@@ -73,24 +72,45 @@
       <div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García"></div>
       <div class="form-group"><label class="form-label">Correo electrónico</label><input class="form-input" id="r-email" type="email" placeholder="correo@ejemplo.com"></div>
       <div class="form-group"><label class="form-label">Número de invitados</label><input class="form-input" id="r-total" type="number" value="4"></div>
-      <button class="btn btn-gold" onclick="doRegister()">Registrar</button>
+      <button class="btn btn-gold" onclick="showConfirmRegister()">Registrar</button>
       <button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-confirm">
+    <div class="confirm-card">
+      <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">¿Son correctos tus datos?</h3>
+      <p style="font-size:14px; margin-bottom:10px;"><b>Nombre:</b> <span id="conf-name"></span></p>
+      <p style="font-size:14px; margin-bottom:10px;"><b>Correo:</b> <span id="conf-email"></span></p>
+      <p style="font-size:14px; margin-bottom:20px;"><b>Invitados:</b> <span id="conf-total"></span></p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" style="flex:1" onclick="document.getElementById('modal-confirm').classList.remove('active')">Editar</button>
+        <button class="btn btn-gold" style="flex:1" onclick="doRegister()">Confirmar</button>
+      </div>
     </div>
   </div>
 
   <div id="s-setup" class="screen">
     <div class="card">
       <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Asientos en 1ª Fila</h3>
+      
       <div id="edit-name-section" style="display:none; margin-bottom:20px;">
         <label class="form-label">Tu nombre</label>
         <input class="form-input" id="e-name" type="text">
       </div>
+
       <div class="slider-box">
-        <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="document.getElementById('e-slider-val').innerText=this.value">
+        <div id="invitados-warning" class="warning-box">
+          ⚠️ No puedes seleccionar más de <span id="max-inv-warn"></span> asientos porque solo traes ese número de invitados.
+        </div>
+        <p style="font-size:14px;">Selecciona cuántos de tus invitados irán delante:</p>
+        <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="handleSliderChange(this.value)">
         <div class="big-num" id="e-slider-val">0</div>
-        <p style="font-size:12px; color:gray">Máximo permitido: <span id="e-max-label">4</span></p>
+        <p style="font-size:12px; color:gray">Tienes un total de <span id="e-max-label">4</span> huecos de reserva.</p>
       </div>
-      <button class="btn btn-gold" onclick="saveConfig()">Guardar</button>
+
+      <button class="btn btn-gold" id="btn-save-config" onclick="saveConfig()">Guardar Selección</button>
+      
       <div id="extra-btns" style="display:none; margin-top:15px;">
         <button class="btn" onclick="goTo('s-main')">Volver</button>
         <button class="btn btn-red" style="margin-top:20px" onclick="deleteAccount()">Borrar cuenta</button>
@@ -131,7 +151,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com/alumnos";
+  const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com";
   let currentUser = null;
 
   function goTo(id) {
@@ -142,19 +162,35 @@
 
   function showToast(m) { const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
 
+  // CONFIRMACIÓN REGISTRO
+  function showConfirmRegister() {
+    const name = document.getElementById('r-name').value.trim();
+    const email = document.getElementById('r-email').value.trim();
+    const total = document.getElementById('r-total').value;
+    if(!name || !email) return alert("Faltan datos");
+    
+    document.getElementById('conf-name').innerText = name;
+    document.getElementById('conf-email').innerText = email;
+    document.getElementById('conf-total').innerText = total;
+    document.getElementById('modal-confirm').classList.add('active');
+  }
+
   async function doRegister() {
     const email = document.getElementById('r-email').value.toLowerCase().replace(/\./g, '_');
     const name = document.getElementById('r-name').value.trim();
     const total = parseInt(document.getElementById('r-total').value);
-    if(!name || !email) return alert("Faltan datos");
+    
     const nuevo = { nombre: name, email: email, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
-    await fetch(`${BASE_URL}/${email}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
-    showToast("¡Registrado!"); goTo('s-login');
+    await fetch(`${BASE_URL}/alumnos/${email}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
+    
+    document.getElementById('modal-confirm').classList.remove('active');
+    showToast("¡Registro realizado!");
+    goTo('s-login');
   }
 
   async function doLogin() {
     const email = document.getElementById('l-email').value.toLowerCase().replace(/\./g, '_');
-    const r = await fetch(`${BASE_URL}/${email}.json`);
+    const r = await fetch(`${BASE_URL}/alumnos/${email}.json`);
     const u = await r.json();
     if(!u) return alert("Usuario no encontrado");
     currentUser = u;
@@ -163,14 +199,16 @@
 
   function openSetupScreen(isFirstTime) {
     const slider = document.getElementById('e-slider');
-    const maxReal = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
-    slider.max = maxReal;
-    document.getElementById('e-max-label').innerText = maxReal;
+    const maxPossession = currentUser.capacidad;
+    slider.max = maxPossession;
+    document.getElementById('e-max-label').innerText = maxPossession;
+    
     if(isFirstTime) {
       document.getElementById('setup-title').innerText = "¡Bienvenido!";
       document.getElementById('edit-name-section').style.display = "none";
       document.getElementById('extra-btns').style.display = "none";
-      slider.value = maxReal;
+      // Seleccionamos por defecto el mínimo entre su capacidad y sus invitados
+      slider.value = Math.min(maxPossession, currentUser.invitadosTotales);
     } else {
       document.getElementById('setup-title').innerText = "Ajustes";
       document.getElementById('edit-name-section').style.display = "block";
@@ -178,8 +216,25 @@
       document.getElementById('e-name').value = currentUser.nombre;
       slider.value = currentUser.front;
     }
-    document.getElementById('e-slider-val').innerText = slider.value;
+    handleSliderChange(slider.value);
     goTo('s-setup');
+  }
+
+  function handleSliderChange(val) {
+    document.getElementById('e-slider-val').innerText = val;
+    const warning = document.getElementById('invitados-warning');
+    const btn = document.getElementById('btn-save-config');
+    
+    if (parseInt(val) > currentUser.invitadosTotales) {
+      warning.style.display = "block";
+      document.getElementById('max-inv-warn').innerText = currentUser.invitadosTotales;
+      btn.style.opacity = "0.5";
+      btn.disabled = true;
+    } else {
+      warning.style.display = "none";
+      btn.style.opacity = "1";
+      btn.disabled = false;
+    }
   }
 
   function openEdit() { openSetupScreen(false); }
@@ -187,11 +242,11 @@
   async function saveConfig() {
     const newFront = parseInt(document.getElementById('e-slider').value);
     const newName = document.getElementById('e-name').value ? document.getElementById('e-name').value.trim() : currentUser.nombre;
-    await fetch(`${BASE_URL}/${currentUser.email}.json`, { 
+    await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
       method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
     });
     showToast("Guardado");
-    const r = await fetch(`${BASE_URL}/${currentUser.email}.json`);
+    const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
     currentUser = await r.json();
     goTo('s-main');
   }
@@ -200,7 +255,7 @@
     document.getElementById('mc-name').innerText = currentUser.nombre;
     document.getElementById('mc-total').innerText = currentUser.invitadosTotales;
     document.getElementById('mc-front').innerText = currentUser.front;
-    const r2 = await fetch(`${BASE_URL}.json`);
+    const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     const cont = document.getElementById('tab-offers');
     cont.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; margin-bottom:10px;'>HUECOS DISPONIBLES</h4>";
@@ -219,15 +274,21 @@
     const cantidad = prompt(`¿Cuántos huecos quieres pedir a ${targetNombre}? (Máximo: ${maxLibres})`, "1");
     const n = parseInt(cantidad);
     if(n > 0 && n <= maxLibres) {
-        showToast(`Solicitados ${n} huecos a ${targetNombre}`);
-    } else if (cantidad !== null) {
-        alert("Cantidad no válida");
-    }
+        const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: n };
+        fetch(`${BASE_URL}/solicitudes/${targetEmail}/${currentUser.email}.json`, { method: 'PUT', body: JSON.stringify(sol) });
+        showToast(`Solicitud enviada`);
+    } else if (cantidad !== null) alert("Cantidad no válida");
+  }
+
+  async function checkNotifs() {
+    const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
+    const data = await r.json();
+    document.getElementById('mail-notif').style.display = data ? 'block' : 'none';
   }
 
   async function deleteAccount() {
     if(!confirm("¿Borrar cuenta?")) return;
-    await fetch(`${BASE_URL}/${currentUser.email}.json`, { method: 'DELETE' });
+    await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'DELETE' });
     logout();
   }
 
