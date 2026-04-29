@@ -27,7 +27,7 @@
     width: 48px; height: 48px; border-radius: 50%; cursor: pointer; 
     display: flex; align-items: center; justify-content: center; position: relative;
   }
-  .mail-btn svg { width: 24px; height: 24px; fill: white; }
+  .mail-btn svg { width: 22px; height: 22px; fill: white; }
   .notif-dot { 
     position: absolute; top: 0px; right: 0px; 
     background: var(--orange); width: 14px; height: 14px; 
@@ -165,7 +165,12 @@
     if(id === 's-main') { renderMain(); checkNotifs(); }
   }
 
-  function showToast(m) { const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+  function showToast(m) { 
+    const t = document.getElementById('toast'); 
+    t.innerText=m; 
+    t.classList.add('show'); 
+    setTimeout(()=>t.classList.remove('show'),3000); 
+  }
 
   function showConfirmRegister() {
     const name = document.getElementById('r-name').value.trim();
@@ -185,7 +190,8 @@
     const nuevo = { nombre: name, email: emailKey, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
     await fetch(`${BASE_URL}/alumnos/${emailKey}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
     document.getElementById('modal-confirm').classList.remove('active');
-    showToast("Registrado"); goTo('s-login');
+    showToast("Registrado correctamente"); 
+    goTo('s-login');
   }
 
   async function doLogin() {
@@ -234,17 +240,23 @@
   function openEdit() { openSetupScreen(false); }
 
   async function saveConfig() {
+    if(!currentUser) return;
     const newFront = parseInt(document.getElementById('e-slider').value);
-    const newName = document.getElementById('e-name').value ? document.getElementById('e-name').value.trim() : currentUser.nombre;
+    const newNameInput = document.getElementById('e-name').value;
+    const newName = (newNameInput && newNameInput.trim() !== "") ? newNameInput.trim() : currentUser.nombre;
+    
+    // Guardar en base de datos
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
       method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
     });
+    
     showToast("Cambios guardados");
-    // CORRECCIÓN AQUÍ: Forzar ir a la pantalla principal
+    // Forzar la navegación al panel principal
     goTo('s-main');
   }
 
   async function renderMain() {
+    if(!currentUser) return;
     const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
     currentUser = await r.json();
     document.getElementById('mc-name').innerText = currentUser.nombre;
