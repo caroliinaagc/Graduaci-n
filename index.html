@@ -31,7 +31,7 @@
   .notif-dot { position: absolute; top: 0px; right: 0px; background: var(--orange); width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--ink); display: none; }
 
   .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin-bottom: 20px; }
-  .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; line-height: 1.2; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; line-height: 1.2; height: 35px; display: flex; align-items: center; justify-content: center; }
   .stat-val { font-size: 20px; font-weight: 600; margin-top: 5px; }
 
   .slider-box { padding: 10px 0; text-align: center; }
@@ -48,7 +48,7 @@
   .toast.show { transform: translateX(-50%) translateY(0); }
 
   .warning-box { background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; display: none; }
-  .success-box { background: #ecfdf5; border: 1px solid #d1fae5; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
+  .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
   .modal-overlay.active { display: flex; }
 </style>
@@ -94,24 +94,24 @@
 
   <div id="s-setup" class="screen">
     <div class="card">
-      <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Asientos Delante</h3>
+      <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Ajustes de Perfil</h3>
       <div id="edit-name-section" style="display:none; margin-bottom:20px;">
         <label class="form-label">Tu nombre</label>
         <input class="form-input" id="e-name" type="text">
       </div>
       <div class="slider-box">
         <div id="invitados-warning" class="warning-box">
-          ⚠️ No puedes ocupar más de <span id="max-inv-warn"></span> asientos porque solo tienes ese número de invitados.
+          ⚠️ No puedes ocupar más de <span id="max-inv-warn"></span> asientos porque ese es tu número de invitados.
         </div>
         <p style="font-size:14px;">¿Cuántos invitados vas a sentar delante?</p>
         <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="handleSliderChange(this.value)">
         <div class="big-num" id="e-slider-val">0</div>
-        <p style="font-size:12px; color:gray">Tienes acceso a gestionar <span id="e-max-label">4</span> huecos en total.</p>
+        <p style="font-size:12px; color:gray">Capacidad total para gestionar: <span id="e-max-label">4</span> huecos.</p>
       </div>
-      <button class="btn btn-gold" id="btn-save-config" onclick="saveConfig()">Guardar</button>
+      <button class="btn btn-gold" id="btn-save-config" onclick="saveConfig()">Guardar Cambios</button>
       <div id="extra-btns" style="display:none; margin-top:15px;">
         <button class="btn" onclick="goTo('s-main')">Volver</button>
-        <button class="btn btn-red" style="margin-top:20px" onclick="deleteAccount()">Borrar cuenta</button>
+        <button class="btn btn-red" style="margin-top:20px" onclick="deleteAccount()">Borrar mi cuenta</button>
       </div>
     </div>
   </div>
@@ -136,8 +136,7 @@
       </div>
     </div>
     
-    <div id="interchange-section">
-        </div>
+    <div id="interchange-section"></div>
   </div>
 
   <div id="s-notifs" class="screen">
@@ -167,7 +166,7 @@
     const name = document.getElementById('r-name').value.trim();
     const email = document.getElementById('r-email').value.trim();
     const total = document.getElementById('r-total').value;
-    if(!name || !email || !total) return alert("Completa todos los campos");
+    if(!name || !email || !total) return alert("Faltan datos");
     document.getElementById('conf-name').innerText = name;
     document.getElementById('conf-email').innerText = email;
     document.getElementById('conf-total').innerText = total;
@@ -181,14 +180,14 @@
     const nuevo = { nombre: name, email: emailKey, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
     await fetch(`${BASE_URL}/alumnos/${emailKey}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
     document.getElementById('modal-confirm').classList.remove('active');
-    showToast("Registro guardado"); goTo('s-login');
+    showToast("Registrado"); goTo('s-login');
   }
 
   async function doLogin() {
     const emailKey = document.getElementById('l-email').value.toLowerCase().replace(/\./g, '_');
     const r = await fetch(`${BASE_URL}/alumnos/${emailKey}.json`);
     const u = await r.json();
-    if(!u) return alert("Correo no registrado");
+    if(!u) return alert("Correo no encontrado");
     currentUser = u;
     if(!u.configured) openSetupScreen(true); else goTo('s-main');
   }
@@ -203,7 +202,7 @@
       document.getElementById('extra-btns').style.display = "none";
       slider.value = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
     } else {
-      document.getElementById('setup-title').innerText = "Ajustes";
+      document.getElementById('setup-title').innerText = "Ajustes de Perfil";
       document.getElementById('edit-name-section').style.display = "block";
       document.getElementById('extra-btns').style.display = "block";
       document.getElementById('e-name').value = currentUser.nombre;
@@ -232,10 +231,16 @@
   async function saveConfig() {
     const newFront = parseInt(document.getElementById('e-slider').value);
     const newName = document.getElementById('e-name').value ? document.getElementById('e-name').value.trim() : currentUser.nombre;
+    
+    // Corregimos el guardado del nombre usando el emailKey guardado en currentUser.email
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
       method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
     });
-    showToast("Configuración guardada"); goTo('s-main');
+    
+    showToast("Guardado con éxito");
+    const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
+    currentUser = await r.json();
+    goTo('s-main');
   }
 
   async function renderMain() {
@@ -249,96 +254,49 @@
     const container = document.getElementById('interchange-section');
     container.innerHTML = "";
 
-    // Lógica de "Cupo Lleno"
+    // BLOQUEO: Si ocupados >= invitados, no se puede solicitar nada más
     if (currentUser.front >= currentUser.invitadosTotales) {
         container.innerHTML = `
             <div class="success-box">
-                <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>¡Cupo completo!</b></p>
-                <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante. No necesitas solicitar más.</p>
+                <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
+                <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
             </div>`;
         return;
     }
 
-    // Si tiene huecos por cubrir, mostrar lista
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
-    container.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; margin-bottom:10px; text-transform: uppercase; letter-spacing:1px;'>Compañeros con huecos libres</h4>";
+    container.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; margin-bottom:10px; text-transform: uppercase;'>Compañeros con huecos</h4>";
     
-    let hayHuecos = false;
     Object.values(todos).forEach(a => {
-      const libresDisponibles = a.capacidad - a.front;
-      if(a.email !== currentUser.email && libresDisponibles > 0) {
-        hayHuecos = true;
+      const libres = a.capacidad - a.front;
+      if(a.email !== currentUser.email && libres > 0) {
         const div = document.createElement('div');
         div.className="offer-card";
-        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libresDisponibles} libres</small></div>
+        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div>
                          <button class="btn btn-gold" style="width:auto; padding:6px 15px;" 
-                         onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libresDisponibles})">Pedir</button>`;
+                         onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
         container.appendChild(div);
       }
     });
-
-    if (!hayHuecos) container.innerHTML += "<p style='color:gray; text-align:center; padding:20px; font-size:13px;'>No hay huecos disponibles en este momento.</p>";
   }
 
-  async function enviarSolicitud(targetEmail, targetNombre, maxDelCompañero) {
-    const misHuecosRestantes = currentUser.invitadosTotales - currentUser.front;
-    // El máximo que puede pedir es lo menor entre lo que el otro ofrece y lo que él necesita
-    const maxRealQuePuedoPedir = Math.min(maxDelCompañero, misHuecosRestantes);
-
-    const cantidad = prompt(`¿Cuántos huecos quieres pedir a ${targetNombre}?\n(Tus invitados restantes: ${misHuecosRestantes} | Ofrece: ${maxDelCompañero})\n\nMáximo permitido: ${maxRealQuePuedoPedir}`, "1");
-    
-    const n = parseInt(cantidad);
-    if(n > 0 && n <= maxRealQuePuedoPedir) {
+  async function enviarSolicitud(targetEmail, targetNombre, maxDelOtro) {
+    const necesito = currentUser.invitadosTotales - currentUser.front;
+    const maxPermitido = Math.min(maxDelOtro, necesito);
+    const n = parseInt(prompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo: ${maxPermitido})`, "1"));
+    if(n > 0 && n <= maxPermitido) {
         const solId = Date.now();
         const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: n };
         await fetch(`${BASE_URL}/solicitudes/${targetEmail}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
         showToast("Solicitud enviada");
-    } else if (cantidad !== null) {
-        alert(`Cantidad no válida. Solo puedes pedir entre 1 y ${maxRealQuePuedoPedir} huecos.`);
-    }
+    } else if (!isNaN(n)) alert("Cantidad no válida");
   }
 
   async function checkNotifs() {
     const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
     const data = await r.json();
     document.getElementById('mail-notif').style.display = data ? 'block' : 'none';
-  }
-
-  async function openNotifs() {
-    goTo('s-notifs');
-    const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
-    const data = await r.json();
-    const list = document.getElementById('notif-list');
-    list.innerHTML = "";
-    if(!data) { list.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>No tienes solicitudes.</p>"; return; }
-    Object.keys(data).forEach(id => {
-      const s = data[id];
-      const d = document.createElement('div'); d.className = "card";
-      d.innerHTML = `<p style='margin-bottom:12px; font-size:14px;'><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'aceptar')">Aceptar</button>
-          <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', null, null, 'rechazar')">Rechazar</button>
-        </div>`;
-      list.appendChild(d);
-    });
-  }
-
-  async function gestionarSol(id, solicitanteEmail, cantidad, accion) {
-    if(accion === 'aceptar') {
-      const nCapYo = currentUser.capacidad - cantidad;
-      const nFrontYo = Math.min(currentUser.front, nCapYo);
-      await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapYo, front: nFrontYo }) });
-      
-      const r = await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`);
-      const otro = await r.json();
-      const nCapOtro = (otro.capacidad || 0) + cantidad;
-      const nFrontOtro = (otro.front || 0) + cantidad;
-      await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapOtro, front: nFrontOtro }) });
-      showToast("Intercambio realizado");
-    }
-    await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`, { method: 'DELETE' });
-    openNotifs();
   }
 
   async function deleteAccount() {
