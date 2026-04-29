@@ -27,7 +27,7 @@
     width: 48px; height: 48px; border-radius: 50%; cursor: pointer; 
     display: flex; align-items: center; justify-content: center; position: relative;
   }
-  .mail-btn svg { width: 24px; height: 24px; fill: white; }
+  .mail-btn svg { width: 22px; height: 22px; fill: white; }
   .notif-dot { 
     position: absolute; top: 0px; right: 0px; 
     background: var(--orange); width: 14px; height: 14px; 
@@ -167,8 +167,7 @@
 
   function showToast(m) { 
     const t = document.getElementById('toast'); 
-    t.innerText=m; 
-    t.classList.add('show'); 
+    t.innerText=m; t.classList.add('show'); 
     setTimeout(()=>t.classList.remove('show'),3000); 
   }
 
@@ -253,7 +252,6 @@
     } catch (e) {
         console.error("Error al guardar:", e);
     } finally {
-        // Redirige siempre a la pantalla principal
         goTo('s-main');
     }
   }
@@ -281,6 +279,7 @@
         return;
     }
 
+    // OBTENER SOLICITUDES PARA FILTRADO PERMANENTE
     const rs = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
     const misSols = await rs.json() || {};
     const emailsSolicitados = Object.values(misSols)
@@ -294,6 +293,7 @@
     let hayAlguien = false;
     Object.values(todos).forEach(a => {
       const libres = a.capacidad - a.front;
+      // Solo mostramos si NO le hemos pedido ya (EmailsSolicitados)
       if(a.email !== currentUser.email && libres > 0 && !emailsSolicitados.includes(a.email)) {
         hayAlguien = true;
         const div = document.createElement('div');
@@ -311,7 +311,15 @@
     const n = parseInt(prompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo permitido: ${maxPermitido})`, "1"));
     if(n > 0 && n <= maxPermitido) {
         const solId = "sol_" + Date.now();
-        const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: n, id: solId, status: 'pending', paraNombre: targetNombre, targetEmail: targetEmail };
+        const sol = { 
+            desde: currentUser.nombre, 
+            desdeEmail: currentUser.email, 
+            cantidad: n, 
+            id: solId, 
+            status: 'pending', 
+            paraNombre: targetNombre, 
+            targetEmail: targetEmail 
+        };
         await fetch(`${BASE_URL}/solicitudes/${targetEmail}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
         await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
         showToast("Solicitud enviada");
@@ -336,19 +344,24 @@
     const data = await r.json();
     list.innerHTML = "";
     if(!data || Object.keys(data).length === 0) { list.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>No hay solicitudes.</p>"; return; }
+    
     Object.keys(data).forEach(id => {
       const s = data[id];
       const d = document.createElement('div'); d.className = "card";
+      
       if (s.desdeEmail !== currentUser.email) {
+          // Solicitud RECIBIDA
           d.innerHTML = `<p style='margin-bottom:12px; font-size:14px;'><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
             <div style="display:flex; gap:8px;">
-              <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'aceptar')">Aceptar</button>
-              <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeEmail}', null, 'rechazar')">Rechazar</button>
+              <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'aceptar', '${s.desde}')">Aceptar</button>
+              <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeEmail}', null, 'rechazar', '${s.desde}')">Rechazar</button>
             </div>`;
       } else if (s.status === 'pending') {
+          // Solicitud ENVIADA (Esperando)
           d.innerHTML = `<p style='font-size:14px; color:gray; text-align:center; margin-bottom:12px;'>Esperando que <b>${s.paraNombre}</b> apruebe tu solicitud de ${s.cantidad} hueco(s)...</p>
             <button class="btn" style="font-size:12px; padding:8px;" onclick="limpiarNotif('${id}')">Marcar como leído</button>`;
       } else {
+          // Solicitud ENVIADA (Resultado: Aceptada/Rechazada)
           const color = s.status === 'accepted' ? 'var(--green)' : 'var(--red)';
           const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
           d.innerHTML = `<p style='margin-bottom:12px; font-size:14px; text-align:center; color:${color};'><b>${s.paraNombre}</b> ${msg} tu solicitud de ${s.cantidad} hueco(s).</p>
@@ -358,7 +371,7 @@
     });
   }
 
-  async function gestionarSol(id, solicitanteEmail, cantidad, accion) {
+  async function gestionarSol(id, solicitanteEmail, cantidad, accion, solicitanteNombre) {
     if(accion === 'aceptar') {
       const rCheck = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
       const userFresh = await rCheck.json();
@@ -370,17 +383,30 @@
       const nCapYo = currentUser.capacidad - cantidad;
       const nFrontYo = Math.min(currentUser.front, nCapYo);
       await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapYo, front: nFrontYo }) });
+      
       const r = await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`);
       const otro = await r.json();
       const nCapOtro = (otro.capacidad || 0) + cantidad;
       const nFrontOtro = (otro.front || 0) + cantidad;
       await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapOtro, front: nFrontOtro }) });
-      await fetch(`${BASE_URL}/solicitudes/${solicitanteEmail}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: 'accepted' }) });
+      
+      // Actualizamos buzón del otro (Conservando datos de nombre y cantidad)
+      await fetch(`${BASE_URL}/solicitudes/${solicitanteEmail}/${id}.json`, { 
+          method: 'PATCH', 
+          body: JSON.stringify({ status: 'accepted', paraNombre: currentUser.nombre, cantidad: cantidad }) 
+      });
       showToast("Intercambio realizado");
     } else {
-      await fetch(`${BASE_URL}/solicitudes/${solicitanteEmail}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: 'rejected' }) });
+      // Actualizamos buzón del otro como rechazado
+      const rGet = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`);
+      const sData = await rGet.json();
+      await fetch(`${BASE_URL}/solicitudes/${solicitanteEmail}/${id}.json`, { 
+          method: 'PATCH', 
+          body: JSON.stringify({ status: 'rejected', paraNombre: currentUser.nombre, cantidad: sData.cantidad }) 
+      });
       showToast("Solicitud rechazada");
     }
+    // Borramos de MI buzón
     await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`, { method: 'DELETE' });
     openNotifs();
   }
