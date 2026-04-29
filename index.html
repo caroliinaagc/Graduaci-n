@@ -16,14 +16,17 @@
   .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
   
   .form-group { margin-bottom: 18px; text-align: left; }
-  .form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px; color: var(--ink); }
+  .form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; color: var(--ink); }
   .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); font-family: inherit; font-size: 15px; background: #fff; }
-  .form-subtitle { font-size: 11px; color: var(--red); margin-bottom: 8px; display: block; font-weight: 500; }
 
   .my-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 22px; margin-bottom: 16px; position: relative; }
   .name-row { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
   
-  .mail-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
+  .mail-btn { 
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); 
+    width: 48px; height: 48px; border-radius: 50%; cursor: pointer; 
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
   .mail-btn svg { width: 24px; height: 24px; fill: white; }
   .notif-dot { position: absolute; top: 0px; right: 0px; background: var(--orange); width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--ink); display: none; }
 
@@ -43,6 +46,7 @@
   .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   .info-box { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   
+  /* ESTILOS NOTIFICACIONES */
   .notif-card { transition: 0.3s; }
   .notif-pending-unread { background: #fff; border: 2px solid var(--blue); }
   .notif-pending-read { background: #f1f5f9; border: 1px solid var(--border); opacity: 0.8; }
@@ -73,22 +77,16 @@
   <div id="s-register" class="screen">
     <div class="card">
       <h3 style="margin-bottom:20px">Registrar Usuario</h3>
-      <div class="form-group">
-        <label class="form-label">Nombre y Apellidos</label>
-        <input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García">
-      </div>
+      <div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García"></div>
       <div class="form-group">
         <label class="form-label">Identificador</label>
-        <span class="form-subtitle">Este código es privado, no lo compartas con nadie.</span>
+        <span style="font-size:11px; color:var(--red); display:block; margin-bottom:5px;">Este código es privado, no lo compartas con nadie.</span>
         <div style="display:flex; gap:8px;">
           <input class="form-input" id="r-id" type="text" placeholder="Código único">
           <button class="btn" style="width:auto; padding:0 15px;" onclick="generateID()">Generar</button>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Número de invitados</label>
-        <input class="form-input" id="r-total" type="number" value="4">
-      </div>
+      <div class="form-group"><label class="form-label">Número de invitados</label><input class="form-input" id="r-total" type="number" value="4"></div>
       <button class="btn btn-gold" onclick="showConfirmRegister()">Registrar</button>
       <button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
     </div>
@@ -348,20 +346,17 @@
       const s = data[id];
       const d = document.createElement('div'); d.className = "card notif-card";
       
-      if (s.desdeId !== currentUser.id) {
-          // RECIBIDA (Soy quien acepta/rechaza)
+      if (s.desdeId !== currentUser.id && s.status === 'pending') {
           d.innerHTML = `<p><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
             <div style="display:flex; gap:8px; margin-top:10px">
               <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeId}', ${s.cantidad}, 'accepted', '${s.desde}')">Aceptar</button>
               <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeId}', ${s.cantidad}, 'rejected', '${s.desde}')">Rechazar</button>
             </div>`;
-      } else if (s.status === 'pending') {
-          // ENVIADA - ESPERANDO
+      } else if (s.desdeId === currentUser.id && s.status === 'pending') {
           d.classList.add(s.unread ? 'notif-pending-unread' : 'notif-pending-read');
           d.innerHTML = `<p style="text-align:center">Esperando a <b>${s.paraNombre}</b> por ${s.cantidad} hueco(s)...</p>`;
           if(s.unread) d.innerHTML += `<button class="btn" style="margin-top:10px" onclick="marcarLeido('${id}')">Marcar como leído</button>`;
       } else {
-          // FEEDBACK (Aceptado o Rechazado)
           const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
           const color = s.status === 'accepted' ? 'var(--green)' : 'var(--red)';
           d.innerHTML = `<p style="text-align:center; color:${color}; font-weight:600;"><b>${s.paraNombre}</b> ${msg} tu solicitud de ${s.cantidad} hueco(s).</p>
@@ -380,6 +375,7 @@
       if(neededBySolicitor <= 0) {
         alert("El alumno ya completó su cupo.");
         await fetch(`${BASE_URL}/solicitudes/${currentUser.id}/${id}.json`, { method: 'DELETE' });
+        await fetch(`${BASE_URL}/solicitudes/${solicitanteId}/${id}.json`, { method: 'DELETE' });
         return openNotifs();
       }
 
@@ -393,33 +389,24 @@
       const me = await rC.json();
       if((me.capacidad - me.front) < finalCant) return alert("No tienes suficientes huecos.");
 
-      // Cambios numéricos
       await fetch(`${BASE_URL}/alumnos/${currentUser.id}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: me.capacidad - finalCant, front: Math.min(me.front, me.capacidad - finalCant) }) });
       const newFrontOther = solicitor.front + finalCant;
       const newCapOther = solicitor.capacidad + finalCant;
       await fetch(`${BASE_URL}/alumnos/${solicitanteId}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: newCapOther, front: newFrontOther }) });
 
-      // Feedback para el solicitante
       await fetch(`${BASE_URL}/solicitudes/${solicitanteId}/${id}.json`, { 
           method: 'PUT', 
-          body: JSON.stringify({ 
-            status: 'accepted', 
-            unread: true, 
-            paraNombre: currentUser.nombre, 
-            cantidad: finalCant,
-            desdeId: solicitanteId,
-            targetId: currentUser.id
-          }) 
+          body: JSON.stringify({ status: 'accepted', unread: true, paraNombre: currentUser.nombre, cantidad: finalCant, desdeId: solicitanteId, targetId: currentUser.id }) 
       });
 
-      // Si el otro completó cupo, limpiar todas sus solicitudes pendientes enviadas
       if (newFrontOther >= solicitor.invitadosTotales) {
           const rAllSols = await fetch(`${BASE_URL}/solicitudes/${solicitanteId}.json`);
           const allSols = await rAllSols.json();
           if(allSols) {
               for (let sKey in allSols) {
-                  if (allSols[sKey].desdeId === solicitanteId && allSols[sKey].status === 'pending') {
-                      await fetch(`${BASE_URL}/solicitudes/${allSols[sKey].targetId}/${sKey}.json`, { method: 'DELETE' });
+                  const s = allSols[sKey];
+                  if (s.desdeId === solicitanteId && s.status === 'pending') {
+                      await fetch(`${BASE_URL}/solicitudes/${s.targetId}/${sKey}.json`, { method: 'DELETE' });
                       await fetch(`${BASE_URL}/solicitudes/${solicitanteId}/${sKey}.json`, { method: 'DELETE' });
                   }
               }
@@ -427,15 +414,12 @@
       }
       showToast("Intercambio realizado");
     } else {
-      // Rechazo
       await fetch(`${BASE_URL}/solicitudes/${solicitanteId}/${id}.json`, { 
-          method: 'PATCH', 
-          body: JSON.stringify({ status: 'rejected', unread: true, paraNombre: currentUser.nombre, cantidad: cantPedida }) 
+          method: 'PUT', 
+          body: JSON.stringify({ status: 'rejected', unread: true, paraNombre: currentUser.nombre, cantidad: cantPedida, desdeId: solicitanteId, targetId: currentUser.id }) 
       });
       showToast("Solicitud rechazada");
     }
-    
-    // Borrar de mi buzón
     await fetch(`${BASE_URL}/solicitudes/${currentUser.id}/${id}.json`, { method: 'DELETE' });
     openNotifs();
   }
