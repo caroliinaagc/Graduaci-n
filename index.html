@@ -48,6 +48,7 @@
   .toast.show { transform: translateX(-50%) translateY(0); }
 
   .warning-box { background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; display: none; }
+  .info-box { background: #fefce8; border: 1px solid #fef08a; color: #854d0e; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
   .modal-overlay.active { display: flex; }
@@ -135,7 +136,6 @@
         <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
       </div>
     </div>
-    
     <div id="interchange-section"></div>
   </div>
 
@@ -231,16 +231,12 @@
   async function saveConfig() {
     const newFront = parseInt(document.getElementById('e-slider').value);
     const newName = document.getElementById('e-name').value ? document.getElementById('e-name').value.trim() : currentUser.nombre;
-    
-    // Corregimos el guardado del nombre usando el emailKey guardado en currentUser.email
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
       method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
     });
-    
-    showToast("Guardado con éxito");
     const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
     currentUser = await r.json();
-    goTo('s-main');
+    showToast("Guardado con éxito"); goTo('s-main');
   }
 
   async function renderMain() {
@@ -249,18 +245,20 @@
     document.getElementById('mc-name').innerText = currentUser.nombre;
     document.getElementById('mc-total').innerText = currentUser.invitadosTotales;
     document.getElementById('mc-front').innerText = currentUser.front;
-    document.getElementById('mc-free').innerText = currentUser.capacidad - currentUser.front;
+    const libresMios = currentUser.capacidad - currentUser.front;
+    document.getElementById('mc-free').innerText = libresMios;
     
     const container = document.getElementById('interchange-section');
     container.innerHTML = "";
 
-    // BLOQUEO: Si ocupados >= invitados, no se puede solicitar nada más
     if (currentUser.front >= currentUser.invitadosTotales) {
-        container.innerHTML = `
-            <div class="success-box">
-                <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-                <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-            </div>`;
+        container.innerHTML = `<div class="success-box"><p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p><p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p></div>`;
+        return;
+    }
+
+    const invitadosSinSentar = currentUser.invitadosTotales - currentUser.front;
+    if (libresMios >= invitadosSinSentar) {
+        container.innerHTML = `<div class="info-box"><p style="font-size: 16px; margin-bottom: 10px;">⚠️ <b>Tienes huecos disponibles</b></p><p style="font-size: 13px; opacity: 0.9;">Todavía tienes asientos libres propios para ubicar a tus invitados. Ve a <b>Ajustes</b> para asignarlos antes de pedir a otros.</p></div>`;
         return;
     }
 
@@ -273,9 +271,7 @@
       if(a.email !== currentUser.email && libres > 0) {
         const div = document.createElement('div');
         div.className="offer-card";
-        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div>
-                         <button class="btn btn-gold" style="width:auto; padding:6px 15px;" 
-                         onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
+        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div><button class="btn btn-gold" style="width:auto; padding:6px 15px;" onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
         container.appendChild(div);
       }
     });
@@ -297,6 +293,37 @@
     const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
     const data = await r.json();
     document.getElementById('mail-notif').style.display = data ? 'block' : 'none';
+  }
+
+  async function openNotifs() {
+    goTo('s-notifs');
+    const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
+    const data = await r.json();
+    const list = document.getElementById('notif-list');
+    list.innerHTML = "";
+    if(!data) { list.innerHTML = "<p style='color:gray; text-align:center;'>No hay solicitudes.</p>"; return; }
+    Object.keys(data).forEach(id => {
+      const s = data[id];
+      const d = document.createElement('div'); d.className = "card";
+      d.innerHTML = `<p style='margin-bottom:12px; font-size:14px;'><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p><div style="display:flex; gap:8px;"><button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'aceptar')">Aceptar</button><button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', null, null, 'rechazar')">Rechazar</button></div>`;
+      list.appendChild(d);
+    });
+  }
+
+  async function gestionarSol(id, solicitanteEmail, cantidad, accion) {
+    if(accion === 'aceptar') {
+      const nCapYo = currentUser.capacidad - cantidad;
+      const nFrontYo = Math.min(currentUser.front, nCapYo);
+      await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapYo, front: nFrontYo }) });
+      const r = await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`);
+      const otro = await r.json();
+      const nCapOtro = (otro.capacidad || 0) + cantidad;
+      const nFrontOtro = (otro.front || 0) + cantidad;
+      await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapOtro, front: nFrontOtro }) });
+      showToast("Intercambio realizado");
+    }
+    await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`, { method: 'DELETE' });
+    openNotifs();
   }
 
   async function deleteAccount() {
