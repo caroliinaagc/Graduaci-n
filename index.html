@@ -46,7 +46,6 @@
   .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   .info-box { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   
-  /* ESTILOS NOTIFICACIONES */
   .notif-card { transition: 0.3s; }
   .notif-pending-unread { background: #fff; border: 2px solid var(--blue); }
   .notif-pending-read { background: #f1f5f9; border: 1px solid var(--border); opacity: 0.8; }
@@ -249,17 +248,17 @@
     const container = document.getElementById('interchange-section');
     container.innerHTML = "";
 
-    // FILTRADO PERMANENTE: Si existe solicitud (pending/read/accepted/rejected), no sale el alumno
     const rs = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
     const misSols = await rs.json() || {};
     const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
+    // RESTAURACIÓN DE TEXTOS ORIGINALES
     if (currentUser.front >= currentUser.invitadosTotales) {
-        container.innerHTML = `<div class="success-box"><b>🎉 Cupo completo</b></div>`;
+        container.innerHTML = `<div class="success-box"><p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p><p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p></div>`;
         return;
     }
     if (libresMios > 0) {
-        container.innerHTML = `<div class="info-box"><b>📍 Asigna tus propios huecos en Ajustes.</b></div>`;
+        container.innerHTML = `<div class="info-box"><p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p><p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres. Úsalos en <b>Ajustes</b> antes de pedir a otros.</p></div>`;
         return;
     }
 
@@ -311,19 +310,16 @@
       const d = document.createElement('div'); d.className = "card notif-card";
       
       if (s.desdeEmail !== currentUser.email) {
-          // RECIBIDA
           d.innerHTML = `<p><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
             <div style="display:flex; gap:8px; margin-top:10px">
               <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'accepted', '${s.desde}')">Aceptar</button>
               <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'rejected', '${s.desde}')">Rechazar</button>
             </div>`;
       } else if (s.status === 'pending') {
-          // ENVIADA - ESPERANDO
           d.classList.add(s.unread ? 'notif-pending-unread' : 'notif-pending-read');
           d.innerHTML = `<p style="text-align:center">Esperando a <b>${s.paraNombre}</b> por ${s.cantidad} hueco(s)...</p>`;
           if(s.unread) d.innerHTML += `<button class="btn" style="margin-top:10px" onclick="marcarLeido('${id}')">Marcar como leído</button>`;
       } else {
-          // FEEDBACK
           const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
           d.innerHTML = `<p style="text-align:center"><b>${s.paraNombre}</b> ${msg} tu solicitud.</p>
             <button class="btn btn-gold" style="margin-top:10px" onclick="borrarSol('${id}')">Aceptar</button>`;
@@ -342,7 +338,6 @@
       const ot = await rO.json();
       await fetch(`${BASE_URL}/alumnos/${solEmail}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: ot.capacidad + cant, front: ot.front + cant }) });
     }
-    // IMPORTANTE: Actualizar el buzón del otro ANTES de borrar el mío
     await fetch(`${BASE_URL}/solicitudes/${solEmail}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: status, unread: true, paraNombre: currentUser.nombre, cantidad: cant }) });
     await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`, { method: 'DELETE' });
     openNotifs();
