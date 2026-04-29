@@ -398,17 +398,32 @@
     if(status === 'accepted') {
       const rC = await fetch(`${BASE_URL}/alumnos/${currentUser.idKey}.json`);
       const me = await rC.json();
-      if((me.capacidad - me.front) < cant) return alert("No tienes huecos.");
-      await fetch(`${BASE_URL}/alumnos/${currentUser.idKey}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: me.capacidad - cant, front: Math.min(me.front, me.capacidad - cant) }) });
       const rO = await fetch(`${BASE_URL}/alumnos/${solId}.json`);
       const ot = await rO.json();
-      await fetch(`${BASE_URL}/alumnos/${solId}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: ot.capacidad + cant, front: ot.front + cant }) });
+ 
+      // Ajustar la cantidad a lo que el solicitante realmente aun necesita
+      const necesita = ot.invitadosTotales - ot.front;
+      const cantReal = Math.min(cant, necesita);
+ 
+      // Si el solicitante ya no necesita nada, cancelar directamente sin transferir
+      if (cantReal <= 0) {
+        await fetch(`${BASE_URL}/solicitudes/${solId}/${id}.json`, { method: 'DELETE' });
+        await fetch(`${BASE_URL}/solicitudes/${currentUser.idKey}/${id}.json`, { method: 'DELETE' });
+        openNotifs();
+        return;
+      }
+ 
+      if((me.capacidad - me.front) < cantReal) return alert("No tienes huecos suficientes.");
+      await fetch(`${BASE_URL}/alumnos/${currentUser.idKey}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: me.capacidad - cantReal, front: Math.min(me.front, me.capacidad - cantReal) }) });
+      await fetch(`${BASE_URL}/alumnos/${solId}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: ot.capacidad + cantReal, front: ot.front + cantReal }) });
  
       // Si el solicitante ya tiene el cupo completo, cancelar todas sus solicitudes pendientes
-      const otActualizado = { ...ot, capacidad: ot.capacidad + cant, front: ot.front + cant };
+      const otActualizado = { ...ot, capacidad: ot.capacidad + cantReal, front: ot.front + cantReal };
       if (otActualizado.front >= otActualizado.invitadosTotales) {
         await cancelarPendientesDelSolicitante(solId, id);
       }
+ 
+      cant = cantReal; // actualizar para que la notificacion refleje la cantidad real transferida
     }
     await fetch(`${BASE_URL}/solicitudes/${solId}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: status, unread: true, paraNombre: currentUser.nombre, cantidad: cant }) });
     await fetch(`${BASE_URL}/solicitudes/${currentUser.idKey}/${id}.json`, { method: 'DELETE' });
