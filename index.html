@@ -43,6 +43,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: 
 
 .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
 .info-box { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
+
 /* ESTILOS NOTIFICACIONES */
 .notif-card { transition: 0.3s; }
 .notif-pending-unread { background: #fff; border: 2px solid var(--blue); }
@@ -59,100 +60,108 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: 
 <body>
 
 <div class="app">
-<div id="s-login" class="screen active">
-<div class="card" style="max-width:400px; margin: 40px auto; text-align: center;">
-<h2 style="font-family:'DM Serif Display'; margin-bottom: 25px;">Graduación 2026</h2>
-<div class="form-group">
-<label class="form-label">Identificador</label>
-<input class="form-input" id="l-id" type="text" placeholder="Introduce tu ID">
-</div>
-<button class="btn btn-gold" onclick="doLogin()">Entrar</button>
-<button class="btn" style="margin-top:10px; border:none;" onclick="goToRegister()">Crear cuenta nueva</button>
-<button class="btn" style="margin-top:40px; color: var(--red); border-color: #fecaca; font-size: 11px;" onclick="limpiarTodo()">BORRAR TODA LA BASE DE DATOS</button>
-</div>
-</div>
-
-<div id="s-register" class="screen">
-<div class="card">
-<h3 style="margin-bottom:20px">Registrar Usuario</h3>
-<div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García"></div>
-<div class="form-group">
-    <label class="form-label">Identificador</label>
-    <p style="font-size: 11px; color: #666; margin-top: -5px; margin-bottom: 5px;">Este código es privado, no lo compartas con nadie.</p>
-    <div style="display: flex; gap: 8px;">
-        <input class="form-input" id="r-id" type="text" placeholder="Crea tu código">
-        <button class="btn" style="width: auto; padding: 0 15px;" onclick="generateID()">Generar</button>
+  <div id="s-login" class="screen active">
+    <div class="card" style="max-width:400px; margin: 40px auto; text-align: center;">
+      <h2 style="font-family:'DM Serif Display'; margin-bottom: 25px;">Graduación 2026</h2>
+      
+      <div class="form-group">
+        <label class="form-label">Identificador</label>
+        <input class="form-input" id="l-id" type="text" placeholder="Escribe tu ID">
+      </div>
+      
+      <button class="btn btn-gold" onclick="doLogin()">Entrar</button>
+      <button class="btn" style="margin-top:10px; border:none;" onclick="goToRegister()">Crear cuenta nueva</button>
+      
+      <hr style="margin: 30px 0; opacity: 0.2;">
+      
+      <button class="btn" style="color: var(--red); border-color: #fecaca; background: #fff5f5; font-size: 11px;" onclick="resetBaseDeDatos()">
+        ⚠️ RESETEAR TODA LA BASE DE DATOS
+      </button>
+      <p style="font-size: 10px; color: gray; margin-top: 8px;">(Usa esto solo para limpiar errores de nombres antiguos)</p>
     </div>
-</div>
-<div class="form-group"><label class="form-label">Número de invitados</label><input class="form-input" id="r-total" type="number" value="4"></div>
-<button class="btn btn-gold" onclick="showConfirmRegister()">Registrar</button>
-<button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
-</div>
-</div>
+  </div>
 
-<div class="modal-overlay" id="modal-confirm">
-<div class="card" style="max-width: 400px; text-align: left;">
-<h3 style="margin-bottom:15px; font-family:'DM Serif Display'">¿Son correctos los datos?</h3>
-<p style="font-size:14px; margin-bottom:8px;"><b>Nombre:</b> <span id="conf-name"></span></p>
-<p style="font-size:14px; margin-bottom:8px;"><b>ID:</b> <span id="conf-email"></span></p>
-<p style="font-size:14px; margin-bottom:20px;"><b>Invitados:</b> <span id="conf-total"></span></p>
-<div style="display:flex; gap:10px;">
-<button class="btn" style="flex:1" onclick="document.getElementById('modal-confirm').classList.remove('active')">Editar</button>
-<button class="btn btn-gold" style="flex:1" onclick="doRegister()">Confirmar</button>
-</div>
-</div>
-</div>
+  <div id="s-register" class="screen">
+    <div class="card">
+      <h3 style="margin-bottom:20px">Registrar Usuario</h3>
+      <div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García"></div>
+      <div class="form-group">
+        <label class="form-label">Identificador</label>
+        <p style="font-size: 11px; color: var(--red); margin-top: -5px; margin-bottom: 8px;">Este código es privado, no lo compartas con nadie.</p>
+        <div style="display:flex; gap:8px;">
+          <input class="form-input" id="r-id" type="text" placeholder="Crea o genera un código">
+          <button class="btn" style="width:auto; padding:0 15px;" onclick="generateRandomID()">Generar</button>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Número de invitados</label><input class="form-input" id="r-total" type="number" value="4"></div>
+      <button class="btn btn-gold" onclick="showConfirmRegister()">Registrar</button>
+      <button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
+    </div>
+  </div>
 
-<div id="s-setup" class="screen">
-<div class="card">
-<h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Configurar Asientos</h3>
-<div id="edit-name-section" style="display:none; margin-bottom:20px;">
-<label class="form-label">Tu nombre</label>
-<input class="form-input" id="e-name" type="text">
-</div>
-<div class="slider-box">
-<p style="font-size:14px;">¿Cuántos invitados vas a sentar delante?</p>
-<input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="handleSliderChange(this.value)">
-<div class="big-num" id="e-slider-val">0</div>
-<p style="font-size:12px; color:gray">Capacidad para gestionar: <span id="e-max-label">4</span> huecos.</p>
-</div>
-<button class="btn btn-gold" id="btn-save-config" onclick="saveConfig()">Guardar Cambios</button>
-<div id="extra-btns" style="display:none; margin-top:15px;">
-<button class="btn" onclick="goTo('s-main')">Volver</button>
-<button class="btn btn-red" style="margin-top:20px" onclick="deleteAccount()">Borrar mi cuenta</button>
-</div>
-</div>
-</div>
+  <div class="modal-overlay" id="modal-confirm">
+    <div class="card" style="max-width: 400px; text-align: left;">
+      <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">¿Son correctos los datos?</h3>
+      <p style="font-size:14px; margin-bottom:8px;"><b>Nombre:</b> <span id="conf-name"></span></p>
+      <p style="font-size:14px; margin-bottom:8px;"><b>Identificador:</b> <span id="conf-email"></span></p>
+      <p style="font-size:14px; margin-bottom:20px;"><b>Invitados:</b> <span id="conf-total"></span></p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" style="flex:1" onclick="document.getElementById('modal-confirm').classList.remove('active')">Editar</button>
+        <button class="btn btn-gold" style="flex:1" onclick="doRegister()">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
-<div id="s-main" class="screen">
-<div class="my-card">
-<div class="name-row">
-<span id="mc-name">...</span>
-<button class="mail-btn" onclick="openNotifs()">
-<svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-<div id="mail-notif" class="notif-dot"></div>
-</button>
-</div>
-<div class="stats-grid">
-<div class="stat-item"><div class="stat-label">Invitados<br>totales</div><div class="stat-val" id="mc-total">0</div></div>
-<div class="stat-item"><div class="stat-label">Asientos delante<br>ocupados</div><div class="stat-val" id="mc-front">0</div></div>
-<div class="stat-item"><div class="stat-label">Asientos delante<br>libres</div><div class="stat-val" id="mc-free" style="color:var(--gold)">0</div></div>
-</div>
-<div style="display:flex; gap:10px;">
-<button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="openEdit()">Ajustes</button>
-<button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
-</div>
-</div>
-<div id="interchange-section"></div>
-</div>
+  <div id="s-setup" class="screen">
+    <div class="card">
+      <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Configurar Asientos</h3>
+      <div id="edit-name-section" style="display:none; margin-bottom:20px;">
+        <label class="form-label">Tu nombre</label>
+        <input class="form-input" id="e-name" type="text">
+      </div>
+      <div class="slider-box">
+        <p style="font-size:14px;">¿Cuántos invitados vas a sentar delante?</p>
+        <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="handleSliderChange(this.value)">
+        <div class="big-num" id="e-slider-val">0</div>
+        <p style="font-size:12px; color:gray">Capacidad para gestionar: <span id="e-max-label">4</span> huecos.</p>
+      </div>
+      <button class="btn btn-gold" id="btn-save-config" onclick="saveConfig()">Guardar Cambios</button>
+      <div id="extra-btns" style="display:none; margin-top:15px;">
+        <button class="btn" onclick="goTo('s-main')">Volver</button>
+        <button class="btn btn-red" style="margin-top:20px" onclick="deleteAccount()">Borrar mi cuenta</button>
+      </div>
+    </div>
+  </div>
 
-<div id="s-notifs" class="screen">
-<div class="card">
-<h3 style="margin-bottom:15px">Notificaciones</h3>
-<div id="notif-list" style="margin-bottom:20px;"></div>
-<button class="btn" onclick="goTo('s-main')">Volver</button>
-</div>
-</div>
+  <div id="s-main" class="screen">
+    <div class="my-card">
+      <div class="name-row">
+        <span id="mc-name">...</span>
+        <button class="mail-btn" onclick="openNotifs()">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          <div id="mail-notif" class="notif-dot"></div>
+        </button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-label">Invitados<br>totales</div><div class="stat-val" id="mc-total">0</div></div>
+        <div class="stat-item"><div class="stat-label">Asientos delante<br>ocupados</div><div class="stat-val" id="mc-front">0</div></div>
+        <div class="stat-item"><div class="stat-label">Asientos delante<br>libres</div><div class="stat-val" id="mc-free" style="color:var(--gold)">0</div></div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="openEdit()">Ajustes</button>
+        <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
+      </div>
+    </div>
+    <div id="interchange-section"></div>
+  </div>
+
+  <div id="s-notifs" class="screen">
+    <div class="card">
+      <h3 style="margin-bottom:15px">Notificaciones</h3>
+      <div id="notif-list" style="margin-bottom:20px;"></div>
+      <button class="btn" onclick="goTo('s-main')">Volver</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -161,21 +170,28 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: 
 const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com";
 let currentUser = null;
 
+// FUNCIÓN PARA RESETEAR TODO
+async function resetBaseDeDatos() {
+    const confirmacion = confirm("¿ESTÁS SEGURO? Esto borrará todas las cuentas, identificadores y datos registrados para siempre.");
+    if (confirmacion) {
+        await fetch(`${BASE_URL}/.json`, { method: 'DELETE' });
+        alert("Base de datos borrada. Ahora puedes crear cuentas nuevas.");
+        location.reload();
+    }
+}
+
 function goTo(id) {
 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
 document.getElementById(id).classList.add('active');
 if(id === 's-main') { renderMain(); checkNotifs(); }
 }
 
-async function limpiarTodo() {
-    if(confirm("¿Estás SEGURO? Se borrarán todos los alumnos, IDs y solicitudes de forma irreversible.")){
-        await fetch(`${BASE_URL}/.json`, { method: 'DELETE' });
-        alert("Base de datos vaciada con éxito.");
-        location.reload();
-    }
+function showToast(m) {
+const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show');
+setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-function generateID() {
+function generateRandomID() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let res = '';
     for (let i = 0; i < 6; i++) { res += chars.charAt(Math.floor(Math.random() * chars.length)); }
@@ -187,11 +203,6 @@ function goToRegister() {
     document.getElementById('r-id').value = "";
     document.getElementById('r-total').value = 4;
     goTo('s-register');
-}
-
-function showToast(m) {
-const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show');
-setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 function showConfirmRegister() {
@@ -210,11 +221,11 @@ const idKey = document.getElementById('r-id').value.trim();
 const name = document.getElementById('r-name').value.trim();
 const total = parseInt(document.getElementById('r-total').value);
 
-const r = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
-const existing = await r.json();
-if(existing) {
-document.getElementById('modal-confirm').classList.remove('active');
-return alert("El identificador ya está siendo utilizado por otro usuario, pruebe uno nuevo");
+const rCheck = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
+const exists = await rCheck.json();
+if(exists) {
+    document.getElementById('modal-confirm').classList.remove('active');
+    return alert("Este identificador ya existe, prueba otro.");
 }
 
 const nuevo = { nombre: name, email: idKey, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
@@ -225,10 +236,10 @@ showToast("Registrado"); goTo('s-login');
 
 async function doLogin() {
 const idKey = document.getElementById('l-id').value.trim();
-if(!idKey) return alert("Introduce tu ID");
+if(!idKey) return alert("Escribe tu ID");
 const r = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
 const u = await r.json();
-if(!u) return alert("Identificador no registrado");
+if(!u) return alert("ID no encontrado");
 currentUser = u;
 if(!u.configured) openSetupScreen(true); else goTo('s-main');
 }
@@ -288,20 +299,12 @@ const misSols = await rs.json() || {};
 const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
 if (currentUser.front >= currentUser.invitadosTotales) {
-container.innerHTML = `
-<div class="success-box">
-<p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-<p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-</div>`;
+container.innerHTML = `<div class="success-box"><p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p><p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p></div>`;
 return;
 }
 
 if (libresMios > 0) {
-container.innerHTML = `
-<div class="info-box">
-<p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
-<p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
-</div>`;
+container.innerHTML = `<div class="info-box"><p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p><p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p></div>`;
 return;
 }
 const r2 = await fetch(`${BASE_URL}/alumnos.json`);
