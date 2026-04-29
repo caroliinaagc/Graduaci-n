@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cream: #F5F1EA; --ink: #1A1714; --gold: #C4973A; --red: #A32D2D; --orange: #FF4B2B; --border: rgba(26,23,20,0.12);
+    --cream: #F5F1EA; --ink: #1A1714; --gold: #C4973A; --red: #A32D2D; --orange: #FF4B2B; --border: rgba(26,23,20,0.12); --green: #2D6A4F;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
@@ -20,20 +20,21 @@
   .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); font-family: inherit; font-size: 15px; }
 
   .my-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 22px; margin-bottom: 16px; position: relative; }
-  .name-row { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+  .name-row { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
   
-  /* ICONO SOBRE MEJORADO */
   .mail-btn { 
     background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); 
     width: 48px; height: 48px; border-radius: 50%; cursor: pointer; 
     display: flex; align-items: center; justify-content: center; position: relative;
-    transition: 0.3s;
   }
-  .mail-btn:hover { background: rgba(255,255,255,0.2); }
   .mail-btn svg { width: 22px; height: 22px; fill: white; }
   .notif-dot { position: absolute; top: 0px; right: 0px; background: var(--orange); width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--ink); display: none; }
 
-  .slider-box { padding: 20px 0; text-align: center; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin-bottom: 20px; }
+  .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; line-height: 1.2; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .stat-val { font-size: 20px; font-weight: 600; margin-top: 5px; }
+
+  .slider-box { padding: 10px 0; text-align: center; }
   input[type=range] { -webkit-appearance: none; width: 100%; height: 10px; background: #ddd; border-radius: 50px; outline: none; margin: 25px 0; }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 30px; height: 30px; background: var(--gold); cursor: pointer; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
   .big-num { font-size: 60px; font-weight: bold; color: var(--gold); line-height: 1; }
@@ -42,18 +43,14 @@
   .btn-gold { background: var(--gold); color: #fff; border: none; }
   .btn-red { background: #fee2e2; color: var(--red); border: 1px solid #fecaca; }
   
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 15px; }
-  .stat-label { font-size: 10px; text-transform: uppercase; opacity: 0.6; margin-bottom: 4px; }
-  .stat-val { font-size: 22px; font-weight: 600; }
   .offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 22px; border-radius: 30px; transition: 0.3s; z-index: 6000; font-size: 13px; }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
   .warning-box { background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; display: none; }
-  
+  .success-box { background: #ecfdf5; border: 1px solid #d1fae5; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
   .modal-overlay.active { display: flex; }
-  .confirm-card { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 400px; }
 </style>
 </head>
 <body>
@@ -83,7 +80,7 @@
   </div>
 
   <div class="modal-overlay" id="modal-confirm">
-    <div class="confirm-card">
+    <div class="card" style="max-width: 400px; text-align: left;">
       <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">¿Son correctos los datos?</h3>
       <p style="font-size:14px; margin-bottom:8px;"><b>Nombre:</b> <span id="conf-name"></span></p>
       <p style="font-size:14px; margin-bottom:8px;"><b>Correo:</b> <span id="conf-email"></span></p>
@@ -97,18 +94,19 @@
 
   <div id="s-setup" class="screen">
     <div class="card">
-      <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Asientos en 1ª Fila</h3>
+      <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Asientos Delante</h3>
       <div id="edit-name-section" style="display:none; margin-bottom:20px;">
         <label class="form-label">Tu nombre</label>
         <input class="form-input" id="e-name" type="text">
       </div>
       <div class="slider-box">
         <div id="invitados-warning" class="warning-box">
-          ⚠️ No puedes elegir más de <span id="max-inv-warn"></span> asientos (límite de tus invitados).
+          ⚠️ No puedes ocupar más de <span id="max-inv-warn"></span> asientos porque solo tienes ese número de invitados.
         </div>
+        <p style="font-size:14px;">¿Cuántos invitados vas a sentar delante?</p>
         <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="handleSliderChange(this.value)">
         <div class="big-num" id="e-slider-val">0</div>
-        <p style="font-size:12px; color:gray">Posees <span id="e-max-label">4</span> huecos de reserva.</p>
+        <p style="font-size:12px; color:gray">Tienes acceso a gestionar <span id="e-max-label">4</span> huecos en total.</p>
       </div>
       <button class="btn btn-gold" id="btn-save-config" onclick="saveConfig()">Guardar</button>
       <div id="extra-btns" style="display:none; margin-top:15px;">
@@ -122,27 +120,30 @@
     <div class="my-card">
       <div class="name-row">
         <span id="mc-name">...</span>
-        <button class="mail-btn" onclick="openNotifs()">
+        <button class="mail-btn" onclick="goTo('s-notifs')">
           <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
           <div id="mail-notif" class="notif-dot"></div>
         </button>
       </div>
       <div class="stats-grid">
-        <div class="stat-item"><div class="stat-label">Invitados</div><div class="stat-val" id="mc-total">0</div></div>
-        <div class="stat-item"><div class="stat-label">En 1ª Fila</div><div class="stat-val" id="mc-front">0</div></div>
+        <div class="stat-item"><div class="stat-label">Invitados<br>totales</div><div class="stat-val" id="mc-total">0</div></div>
+        <div class="stat-item"><div class="stat-label">Asientos delante<br>ocupados</div><div class="stat-val" id="mc-front">0</div></div>
+        <div class="stat-item"><div class="stat-label">Asientos delante<br>libres</div><div class="stat-val" id="mc-free" style="color:var(--gold)">0</div></div>
       </div>
       <div style="display:flex; gap:10px;">
         <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="openEdit()">Ajustes</button>
         <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
       </div>
     </div>
-    <div id="tab-offers"></div>
+    
+    <div id="interchange-section">
+        </div>
   </div>
 
   <div id="s-notifs" class="screen">
     <div class="card">
       <h3 style="margin-bottom:15px">Notificaciones</h3>
-      <div id="notif-list" style="margin-bottom:20px; min-height: 50px;"></div>
+      <div id="notif-list" style="margin-bottom:20px;"></div>
       <button class="btn" onclick="goTo('s-main')">Volver</button>
     </div>
   </div>
@@ -174,8 +175,7 @@
   }
 
   async function doRegister() {
-    const emailRaw = document.getElementById('r-email').value.toLowerCase();
-    const emailKey = emailRaw.replace(/\./g, '_');
+    const emailKey = document.getElementById('r-email').value.toLowerCase().replace(/\./g, '_');
     const name = document.getElementById('r-name').value.trim();
     const total = parseInt(document.getElementById('r-total').value);
     const nuevo = { nombre: name, email: emailKey, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
@@ -209,7 +209,8 @@
       document.getElementById('e-name').value = currentUser.nombre;
       slider.value = currentUser.front;
     }
-    handleSliderChange(slider.value); goTo('s-setup');
+    handleSliderChange(slider.value);
+    goTo('s-setup');
   }
 
   function handleSliderChange(val) {
@@ -234,8 +235,6 @@
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
       method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
     });
-    const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
-    currentUser = await r.json();
     showToast("Configuración guardada"); goTo('s-main');
   }
 
@@ -245,32 +244,59 @@
     document.getElementById('mc-name').innerText = currentUser.nombre;
     document.getElementById('mc-total').innerText = currentUser.invitadosTotales;
     document.getElementById('mc-front').innerText = currentUser.front;
+    document.getElementById('mc-free').innerText = currentUser.capacidad - currentUser.front;
     
+    const container = document.getElementById('interchange-section');
+    container.innerHTML = "";
+
+    // Lógica de "Cupo Lleno"
+    if (currentUser.front >= currentUser.invitadosTotales) {
+        container.innerHTML = `
+            <div class="success-box">
+                <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>¡Cupo completo!</b></p>
+                <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante. No necesitas solicitar más.</p>
+            </div>`;
+        return;
+    }
+
+    // Si tiene huecos por cubrir, mostrar lista
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
-    const cont = document.getElementById('tab-offers');
-    cont.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; margin-bottom:10px;'>HUECOS DISPONIBLES</h4>";
+    container.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; margin-bottom:10px; text-transform: uppercase; letter-spacing:1px;'>Compañeros con huecos libres</h4>";
+    
+    let hayHuecos = false;
     Object.values(todos).forEach(a => {
-      const libres = a.capacidad - a.front;
-      if(a.email !== currentUser.email && libres > 0) {
+      const libresDisponibles = a.capacidad - a.front;
+      if(a.email !== currentUser.email && libresDisponibles > 0) {
+        hayHuecos = true;
         const div = document.createElement('div');
         div.className="offer-card";
-        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div><button class="btn btn-gold" style="width:auto; padding:6px 15px;" onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
-        cont.appendChild(div);
+        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libresDisponibles} libres</small></div>
+                         <button class="btn btn-gold" style="width:auto; padding:6px 15px;" 
+                         onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libresDisponibles})">Pedir</button>`;
+        container.appendChild(div);
       }
     });
+
+    if (!hayHuecos) container.innerHTML += "<p style='color:gray; text-align:center; padding:20px; font-size:13px;'>No hay huecos disponibles en este momento.</p>";
   }
 
-  async function enviarSolicitud(targetEmail, targetNombre, maxLibres) {
-    const cantidad = prompt(`¿Cuántos huecos quieres pedir a ${targetNombre}? (Máximo: ${maxLibres})`, "1");
+  async function enviarSolicitud(targetEmail, targetNombre, maxDelCompañero) {
+    const misHuecosRestantes = currentUser.invitadosTotales - currentUser.front;
+    // El máximo que puede pedir es lo menor entre lo que el otro ofrece y lo que él necesita
+    const maxRealQuePuedoPedir = Math.min(maxDelCompañero, misHuecosRestantes);
+
+    const cantidad = prompt(`¿Cuántos huecos quieres pedir a ${targetNombre}?\n(Tus invitados restantes: ${misHuecosRestantes} | Ofrece: ${maxDelCompañero})\n\nMáximo permitido: ${maxRealQuePuedoPedir}`, "1");
+    
     const n = parseInt(cantidad);
-    if(n > 0 && n <= maxLibres) {
-        const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: n };
-        // USAMOS UN ID ÚNICO PARA QUE NO SE SOBREESCRIBAN SI VARIOS PIDEN AL MISMO
+    if(n > 0 && n <= maxRealQuePuedoPedir) {
         const solId = Date.now();
+        const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: n };
         await fetch(`${BASE_URL}/solicitudes/${targetEmail}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
         showToast("Solicitud enviada");
-    } else if (cantidad !== null) alert("Cantidad no válida");
+    } else if (cantidad !== null) {
+        alert(`Cantidad no válida. Solo puedes pedir entre 1 y ${maxRealQuePuedoPedir} huecos.`);
+    }
   }
 
   async function checkNotifs() {
@@ -285,8 +311,7 @@
     const data = await r.json();
     const list = document.getElementById('notif-list');
     list.innerHTML = "";
-    if(!data) { list.innerHTML = "<p style='color:gray; text-align:center;'>No hay nada nuevo.</p>"; return; }
-
+    if(!data) { list.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>No tienes solicitudes.</p>"; return; }
     Object.keys(data).forEach(id => {
       const s = data[id];
       const d = document.createElement('div'); d.className = "card";
@@ -301,31 +326,27 @@
 
   async function gestionarSol(id, solicitanteEmail, cantidad, accion) {
     if(accion === 'aceptar') {
-      // 1. Restar de mi capacidad
       const nCapYo = currentUser.capacidad - cantidad;
       const nFrontYo = Math.min(currentUser.front, nCapYo);
       await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapYo, front: nFrontYo }) });
-
-      // 2. Sumar al otro
+      
       const r = await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`);
       const otro = await r.json();
       const nCapOtro = (otro.capacidad || 0) + cantidad;
       const nFrontOtro = (otro.front || 0) + cantidad;
       await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapOtro, front: nFrontOtro }) });
       showToast("Intercambio realizado");
-    } else { showToast("Solicitud borrada"); }
-    
+    }
     await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`, { method: 'DELETE' });
     openNotifs();
   }
 
   async function deleteAccount() {
-    if(confirm("¿Seguro que quieres borrar tu cuenta?")) {
+    if(confirm("¿Borrar cuenta?")) {
       await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'DELETE' });
       logout();
     }
   }
-
   function logout() { currentUser = null; goTo('s-login'); }
 </script>
 </body>
