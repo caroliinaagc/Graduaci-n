@@ -18,7 +18,7 @@
   .form-group { margin-bottom: 18px; text-align: left; }
   .form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; color: var(--ink); }
   .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); font-family: inherit; font-size: 15px; background: #fff; }
- 
+
   .my-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 22px; margin-bottom: 16px; position: relative; }
   .name-row { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
   
@@ -29,42 +29,41 @@
   }
   .mail-btn svg { width: 22px; height: 22px; fill: white; }
   .notif-dot { position: absolute; top: 0px; right: 0px; background: var(--orange); width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--ink); display: none; }
- 
+
   .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin-bottom: 20px; }
   .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; line-height: 1.2; height: 35px; display: flex; align-items: center; justify-content: center; }
   .stat-val { font-size: 20px; font-weight: 600; margin-top: 5px; }
- 
+
   .slider-box { padding: 10px 0; text-align: center; }
   input[type=range] { -webkit-appearance: none; width: 100%; height: 10px; background: #ddd; border-radius: 50px; outline: none; margin: 25px 0; }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 30px; height: 30px; background: var(--gold); cursor: pointer; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
   .big-num { font-size: 60px; font-weight: bold; color: var(--gold); line-height: 1; }
- 
+
   .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; width: 100%; font-family: inherit; transition: 0.2s; }
   .btn-gold { background: var(--gold); color: #fff; border: none; }
   .btn-red { background: #fee2e2; color: var(--red); border: 1px solid #fecaca; }
- 
+
   .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   .info-box { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   
-  /* ESTILOS NOTIFICACIONES */
   .notif-card { transition: 0.3s; }
   .notif-pending-unread { background: #fff; border: 2px solid var(--blue); }
   .notif-pending-read { background: #f1f5f9; border: 1px solid var(--border); opacity: 0.8; }
- 
+
   .offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 22px; border-radius: 30px; transition: 0.3s; z-index: 6000; font-size: 13px; }
   .toast.show { transform: translateX(-50%) translateY(0); }
- 
+
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
   .modal-overlay.active { display: flex; }
- 
+
   .id-hint { font-size: 11px; color: #888; margin-top: 5px; display: flex; align-items: center; gap: 6px; }
   .id-hint svg { width: 13px; height: 13px; fill: #888; flex-shrink: 0; }
   .btn-gen { display: inline-flex; align-items: center; gap: 6px; width: auto; padding: 8px 14px; font-size: 13px; margin-top: 8px; border-radius: 8px; }
 </style>
 </head>
 <body>
- 
+
 <div class="app">
   <div id="s-login" class="screen active">
     <div class="card" style="max-width:400px; margin: 40px auto; text-align: center;">
@@ -77,7 +76,7 @@
       <button class="btn" style="margin-top:10px; border:none;" onclick="abrirRegistro()">Crear cuenta nueva</button>
     </div>
   </div>
- 
+
   <div id="s-register" class="screen">
     <div class="card">
       <h3 style="margin-bottom:20px">Registrar Usuario</h3>
@@ -106,7 +105,7 @@
       <button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
     </div>
   </div>
- 
+
   <div class="modal-overlay" id="modal-confirm">
     <div class="card" style="max-width: 400px; text-align: left;">
       <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">¿Son correctos los datos?</h3>
@@ -119,7 +118,7 @@
       </div>
     </div>
   </div>
- 
+
   <div id="s-setup" class="screen">
     <div class="card">
       <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Configurar Asientos</h3>
@@ -140,7 +139,7 @@
       </div>
     </div>
   </div>
- 
+
   <div id="s-main" class="screen">
     <div class="my-card">
       <div class="name-row">
@@ -162,7 +161,7 @@
     </div>
     <div id="interchange-section"></div>
   </div>
- 
+
   <div id="s-notifs" class="screen">
     <div class="card">
       <h3 style="margin-bottom:15px">Notificaciones</h3>
@@ -171,19 +170,19 @@
     </div>
   </div>
 </div>
- 
+
 <div class="toast" id="toast"></div>
- 
+
 <script>
   const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com";
   let currentUser = null;
- 
+
   function goTo(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     if(id === 's-main') { renderMain(); checkNotifs(); }
   }
- 
+
   function abrirRegistro() {
     document.getElementById('r-name').value = '';
     document.getElementById('r-id').value = '';
@@ -191,12 +190,12 @@
     document.getElementById('r-id-error').style.display = 'none';
     goTo('s-register');
   }
- 
+
   function showToast(m) { 
     const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show'); 
     setTimeout(()=>t.classList.remove('show'),3000); 
   }
- 
+
   function generarId() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let id = '';
@@ -204,11 +203,11 @@
     document.getElementById('r-id').value = id;
     document.getElementById('r-id-error').style.display = 'none';
   }
- 
+
   function sanitizeId(raw) {
     return raw.trim().toUpperCase().replace(/[^A-Z0-9]/g, '_');
   }
- 
+
   function showConfirmRegister() {
     const name = document.getElementById('r-name').value.trim();
     const rawId = document.getElementById('r-id').value.trim();
@@ -220,13 +219,12 @@
     document.getElementById('conf-total').innerText = total;
     document.getElementById('modal-confirm').classList.add('active');
   }
- 
+
   async function doRegister() {
     const idKey = sanitizeId(document.getElementById('r-id').value);
     const name = document.getElementById('r-name').value.trim();
     const total = parseInt(document.getElementById('r-total').value);
- 
-    // Comprobar si el identificador ya existe
+
     const check = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
     const existing = await check.json();
     if (existing) {
@@ -236,7 +234,7 @@
       errEl.style.display = 'block';
       return;
     }
- 
+
     const nuevo = { nombre: name, idKey: idKey, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
     await fetch(`${BASE_URL}/alumnos/${idKey}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
     document.getElementById('modal-confirm').classList.remove('active');
@@ -244,7 +242,7 @@
     document.getElementById('r-id').value = "";
     showToast("Registrado"); goTo('s-login');
   }
- 
+
   async function doLogin() {
     const idKey = sanitizeId(document.getElementById('l-id').value);
     if (!idKey) return alert("Introduce tu identificador");
@@ -254,7 +252,7 @@
     currentUser = u;
     if(!u.configured) openSetupScreen(true); else goTo('s-main');
   }
- 
+
   function openSetupScreen(isFirstTime) {
     const slider = document.getElementById('e-slider');
     slider.max = currentUser.capacidad;
@@ -274,16 +272,16 @@
     handleSliderChange(slider.value);
     goTo('s-setup');
   }
- 
+
   function handleSliderChange(val) {
     document.getElementById('e-slider-val').innerText = val;
     const btn = document.getElementById('btn-save-config');
     if (parseInt(val) > currentUser.invitadosTotales) { btn.disabled = true; btn.style.opacity = "0.4"; } 
     else { btn.disabled = false; btn.style.opacity = "1"; }
   }
- 
+
   function openEdit() { openSetupScreen(false); }
- 
+
   async function saveConfig() {
     const newFront = parseInt(document.getElementById('e-slider').value);
     const newName = document.getElementById('e-name').value || currentUser.nombre;
@@ -293,7 +291,7 @@
     showToast("Guardado");
     goTo('s-main');
   }
- 
+
   async function renderMain() {
     const r = await fetch(`${BASE_URL}/alumnos/${currentUser.idKey}.json`);
     currentUser = await r.json();
@@ -305,11 +303,11 @@
     
     const container = document.getElementById('interchange-section');
     container.innerHTML = "";
- 
+
     const rs = await fetch(`${BASE_URL}/solicitudes/${currentUser.idKey}.json`);
     const misSols = await rs.json() || {};
     const idsBloqueados = Object.values(misSols).map(s => s.targetId);
- 
+
     if (currentUser.front >= currentUser.invitadosTotales) {
         container.innerHTML = `
             <div class="success-box">
@@ -318,7 +316,7 @@
             </div>`;
         return;
     }
- 
+
     if (libresMios > 0) {
         container.innerHTML = `
             <div class="info-box">
@@ -327,7 +325,7 @@
             </div>`;
         return;
     }
- 
+
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     container.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; text-transform: uppercase;'>Compañeros con huecos</h4>";
@@ -342,7 +340,7 @@
       }
     });
   }
- 
+
   async function enviarSolicitud(targetId, targetNombre, maxDelOtro) {
     const necesito = currentUser.invitadosTotales - currentUser.front;
     const maxPermitido = Math.min(maxDelOtro, necesito);
@@ -355,7 +353,7 @@
         showToast("Enviada"); renderMain(); checkNotifs();
     }
   }
- 
+
   async function checkNotifs() {
     const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.idKey}.json`);
     const data = await r.json();
@@ -363,14 +361,14 @@
     if(data) Object.values(data).forEach(s => { if(s.unread) hasUnread = true; });
     document.getElementById('mail-notif').style.display = hasUnread ? 'block' : 'none';
   }
- 
+
   async function openNotifs() {
     goTo('s-notifs');
     const list = document.getElementById('notif-list'); list.innerHTML = "";
     const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.idKey}.json`);
     const data = await r.json();
     if(!data) { list.innerHTML = "No hay solicitudes."; return; }
- 
+
     Object.keys(data).forEach(id => {
       const s = data[id];
       const d = document.createElement('div'); d.className = "card notif-card";
@@ -393,18 +391,18 @@
       list.appendChild(d);
     });
   }
- 
+
   async function gestionarSol(id, solId, cant, status, solNombre) {
     if(status === 'accepted') {
       const rC = await fetch(`${BASE_URL}/alumnos/${currentUser.idKey}.json`);
       const me = await rC.json();
       const rO = await fetch(`${BASE_URL}/alumnos/${solId}.json`);
       const ot = await rO.json();
- 
+
       // Ajustar la cantidad a lo que el solicitante realmente aun necesita
       const necesita = ot.invitadosTotales - ot.front;
       const cantReal = Math.min(cant, necesita);
- 
+
       // Si el solicitante ya no necesita nada, cancelar directamente sin transferir
       if (cantReal <= 0) {
         await fetch(`${BASE_URL}/solicitudes/${solId}/${id}.json`, { method: 'DELETE' });
@@ -412,24 +410,24 @@
         openNotifs();
         return;
       }
- 
+
       if((me.capacidad - me.front) < cantReal) return alert("No tienes huecos suficientes.");
       await fetch(`${BASE_URL}/alumnos/${currentUser.idKey}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: me.capacidad - cantReal, front: Math.min(me.front, me.capacidad - cantReal) }) });
       await fetch(`${BASE_URL}/alumnos/${solId}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: ot.capacidad + cantReal, front: ot.front + cantReal }) });
- 
+
       // Si el solicitante ya tiene el cupo completo, cancelar todas sus solicitudes pendientes
       const otActualizado = { ...ot, capacidad: ot.capacidad + cantReal, front: ot.front + cantReal };
       if (otActualizado.front >= otActualizado.invitadosTotales) {
         await cancelarPendientesDelSolicitante(solId, id);
       }
- 
+
       cant = cantReal; // actualizar para que la notificacion refleje la cantidad real transferida
     }
     await fetch(`${BASE_URL}/solicitudes/${solId}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: status, unread: true, paraNombre: currentUser.nombre, cantidad: cant }) });
     await fetch(`${BASE_URL}/solicitudes/${currentUser.idKey}/${id}.json`, { method: 'DELETE' });
     openNotifs();
   }
- 
+
   // Elimina del buzón de cada destinatario las solicitudes pendientes del solicitante,
   // excepto la que se acaba de gestionar (que ya se actualiza por separado).
   async function cancelarPendientesDelSolicitante(solId, solIdGestionado) {
@@ -438,27 +436,25 @@
     if (!susSols) return;
     const promises = Object.keys(susSols).map(async (sid) => {
       const s = susSols[sid];
-      if (sid === solIdGestionado) return; // esta ya se gestiona arriba
+      if (sid === solIdGestionado) return;
       if (s.status === 'pending' && s.desdeId === solId) {
-        // Borrar del buzón del destinatario
         await fetch(`${BASE_URL}/solicitudes/${s.targetId}/${sid}.json`, { method: 'DELETE' });
-        // Borrar del buzón del propio solicitante
         await fetch(`${BASE_URL}/solicitudes/${solId}/${sid}.json`, { method: 'DELETE' });
       }
     });
     await Promise.all(promises);
   }
- 
+
   async function marcarLeido(id) {
     await fetch(`${BASE_URL}/solicitudes/${currentUser.idKey}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ unread: false }) });
     openNotifs();
   }
- 
+
   async function borrarSol(id) {
     await fetch(`${BASE_URL}/solicitudes/${currentUser.idKey}/${id}.json`, { method: 'DELETE' });
     openNotifs();
   }
- 
+
   function logout() { currentUser = null; goTo('s-login'); }
   async function deleteAccount() {
     if(confirm("¿Borrar?")) { await fetch(`${BASE_URL}/alumnos/${currentUser.idKey}.json`, { method: 'DELETE' }); logout(); }
@@ -466,4 +462,3 @@
 </script>
 </body>
 </html>
- 
