@@ -59,99 +59,99 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: 
 <body>
 
 <div class="app">
-<div id="s-login" class="screen active">
-<div class="card" style="max-width:400px; margin: 40px auto; text-align: center;">
-<h2 style="font-family:'DM Serif Display'; margin-bottom: 25px;">Graduación 2026</h2>
-<div class="form-group">
-<label class="form-label">Identificador</label>
-<input class="form-input" id="l-userid" type="text" placeholder="Tu identificador único">
-</div>
-<button class="btn btn-gold" onclick="doLogin()">Entrar</button>
-<button class="btn" style="margin-top:10px; border:none;" onclick="goTo('s-register')">Crear cuenta nueva</button>
-</div>
-</div>
-
-<div id="s-register" class="screen">
-<div class="card">
-<h3 style="margin-bottom:20px">Registrar Usuario</h3>
-<div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García"></div>
-<div class="form-group">
-    <label class="form-label">Identificador</label>
-    <p style="font-size: 11px; color: #666; margin-top: -5px; margin-bottom: 5px;">No compartas este código con nadie.</p>
-    <div style="display: flex; gap: 8px;">
-        <input class="form-input" id="r-userid" type="text" placeholder="Crea tu código o genera uno">
-        <button class="btn" style="width: auto; padding: 0 15px;" onclick="generateRandomID()">Generar</button>
+  <div id="s-login" class="screen active">
+    <div class="card" style="max-width:400px; margin: 40px auto; text-align: center;">
+      <h2 style="font-family:'DM Serif Display'; margin-bottom: 25px;">Graduación 2026</h2>
+      <div class="form-group">
+        <label class="form-label">Identificador</label>
+        <input class="form-input" id="l-userid" type="text" placeholder="Tu código personal">
+      </div>
+      <button class="btn btn-gold" onclick="doLogin()">Entrar</button>
+      <button class="btn" style="margin-top:10px; border:none;" onclick="goToRegister()">Crear cuenta nueva</button>
     </div>
-</div>
-<div class="form-group"><label class="form-label">Número de invitados</label><input class="form-input" id="r-total" type="number" value="4"></div>
-<button class="btn btn-gold" onclick="showConfirmRegister()">Registrar</button>
-<button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
-</div>
-</div>
+  </div>
 
-<div class="modal-overlay" id="modal-confirm">
-<div class="card" style="max-width: 400px; text-align: left;">
-<h3 style="margin-bottom:15px; font-family:'DM Serif Display'">¿Son correctos los datos?</h3>
-<p style="font-size:14px; margin-bottom:8px;"><b>Nombre:</b> <span id="conf-name"></span></p>
-<p style="font-size:14px; margin-bottom:8px;"><b>Identificador:</b> <span id="conf-userid"></span></p>
-<p style="font-size:14px; margin-bottom:20px;"><b>Invitados:</b> <span id="conf-total"></span></p>
-<div style="display:flex; gap:10px;">
-<button class="btn" style="flex:1" onclick="document.getElementById('modal-confirm').classList.remove('active')">Editar</button>
-<button class="btn btn-gold" style="flex:1" onclick="doRegister()">Confirmar</button>
-</div>
-</div>
-</div>
+  <div id="s-register" class="screen">
+    <div class="card">
+      <h3 style="margin-bottom:20px">Registrar Usuario</h3>
+      <div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García"></div>
+      <div class="form-group">
+        <label class="form-label">Identificador</label>
+        <p style="font-size: 11px; color: var(--red); margin-top: -5px; margin-bottom: 8px;">Este código es privado, no lo compartas con nadie.</p>
+        <div style="display:flex; gap:8px;">
+          <input class="form-input" id="r-userid" type="text" placeholder="Crea o genera un código">
+          <button class="btn" style="width:auto; padding:0 15px;" onclick="generateRandomID()">Generar</button>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Número de invitados</label><input class="form-input" id="r-total" type="number" value="4"></div>
+      <button class="btn btn-gold" onclick="showConfirmRegister()">Registrar</button>
+      <button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
+    </div>
+  </div>
 
-<div id="s-setup" class="screen">
-<div class="card">
-<h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Configurar Asientos</h3>
-<div id="edit-name-section" style="display:none; margin-bottom:20px;">
-<label class="form-label">Tu nombre</label>
-<input class="form-input" id="e-name" type="text">
-</div>
-<div class="slider-box">
-<p style="font-size:14px;">¿Cuántos invitados vas a sentar delante?</p>
-<input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="handleSliderChange(this.value)">
-<div class="big-num" id="e-slider-val">0</div>
-<p style="font-size:12px; color:gray">Capacidad para gestionar: <span id="e-max-label">4</span> huecos.</p>
-</div>
-<button class="btn btn-gold" id="btn-save-config" onclick="saveConfig()">Guardar Cambios</button>
-<div id="extra-btns" style="display:none; margin-top:15px;">
-<button class="btn" onclick="goTo('s-main')">Volver</button>
-<button class="btn btn-red" style="margin-top:20px" onclick="deleteAccount()">Borrar mi cuenta</button>
-</div>
-</div>
-</div>
+  <div class="modal-overlay" id="modal-confirm">
+    <div class="card" style="max-width: 400px; text-align: left;">
+      <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">¿Son correctos los datos?</h3>
+      <p style="font-size:14px; margin-bottom:8px;"><b>Nombre:</b> <span id="conf-name"></span></p>
+      <p style="font-size:14px; margin-bottom:8px;"><b>Identificador:</b> <span id="conf-userid"></span></p>
+      <p style="font-size:14px; margin-bottom:20px;"><b>Invitados:</b> <span id="conf-total"></span></p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" style="flex:1" onclick="document.getElementById('modal-confirm').classList.remove('active')">Editar</button>
+        <button class="btn btn-gold" style="flex:1" onclick="doRegister()">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
-<div id="s-main" class="screen">
-<div class="my-card">
-<div class="name-row">
-<span id="mc-name">...</span>
-<button class="mail-btn" onclick="openNotifs()">
-<svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-<div id="mail-notif" class="notif-dot"></div>
-</button>
-</div>
-<div class="stats-grid">
-<div class="stat-item"><div class="stat-label">Invitados<br>totales</div><div class="stat-val" id="mc-total">0</div></div>
-<div class="stat-item"><div class="stat-label">Asientos delante<br>ocupados</div><div class="stat-val" id="mc-front">0</div></div>
-<div class="stat-item"><div class="stat-label">Asientos delante<br>libres</div><div class="stat-val" id="mc-free" style="color:var(--gold)">0</div></div>
-</div>
-<div style="display:flex; gap:10px;">
-<button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="openEdit()">Ajustes</button>
-<button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
-</div>
-</div>
-<div id="interchange-section"></div>
-</div>
+  <div id="s-setup" class="screen">
+    <div class="card">
+      <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Configurar Asientos</h3>
+      <div id="edit-name-section" style="display:none; margin-bottom:20px;">
+        <label class="form-label">Tu nombre</label>
+        <input class="form-input" id="e-name" type="text">
+      </div>
+      <div class="slider-box">
+        <p style="font-size:14px;">¿Cuántos invitados vas a sentar delante?</p>
+        <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="handleSliderChange(this.value)">
+        <div class="big-num" id="e-slider-val">0</div>
+        <p style="font-size:12px; color:gray">Capacidad para gestionar: <span id="e-max-label">4</span> huecos.</p>
+      </div>
+      <button class="btn btn-gold" id="btn-save-config" onclick="saveConfig()">Guardar Cambios</button>
+      <div id="extra-btns" style="display:none; margin-top:15px;">
+        <button class="btn" onclick="goTo('s-main')">Volver</button>
+        <button class="btn btn-red" style="margin-top:20px" onclick="deleteAccount()">Borrar mi cuenta</button>
+      </div>
+    </div>
+  </div>
 
-<div id="s-notifs" class="screen">
-<div class="card">
-<h3 style="margin-bottom:15px">Notificaciones</h3>
-<div id="notif-list" style="margin-bottom:20px;"></div>
-<button class="btn" onclick="goTo('s-main')">Volver</button>
-</div>
-</div>
+  <div id="s-main" class="screen">
+    <div class="my-card">
+      <div class="name-row">
+        <span id="mc-name">...</span>
+        <button class="mail-btn" onclick="openNotifs()">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          <div id="mail-notif" class="notif-dot"></div>
+        </button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-label">Invitados<br>totales</div><div class="stat-val" id="mc-total">0</div></div>
+        <div class="stat-item"><div class="stat-label">Asientos delante<br>ocupados</div><div class="stat-val" id="mc-front">0</div></div>
+        <div class="stat-item"><div class="stat-label">Asientos delante<br>libres</div><div class="stat-val" id="mc-free" style="color:var(--gold)">0</div></div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="openEdit()">Ajustes</button>
+        <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
+      </div>
+    </div>
+    <div id="interchange-section"></div>
+  </div>
+
+  <div id="s-notifs" class="screen">
+    <div class="card">
+      <h3 style="margin-bottom:15px">Notificaciones</h3>
+      <div id="notif-list" style="margin-bottom:20px;"></div>
+      <button class="btn" onclick="goTo('s-main')">Volver</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -161,233 +161,299 @@ const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com";
 let currentUser = null;
 
 function goTo(id) {
-document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-if(id === 's-main') { renderMain(); checkNotifs(); }
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id === 's-main') { renderMain(); checkNotifs(); }
 }
 
 function showToast(m) {
-const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show');
-setTimeout(()=>t.classList.remove('show'),3000);
+  const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-// Nueva función para generar ID aleatorio
+// Resetear y generar ID para registro
+function goToRegister() {
+  document.getElementById('r-name').value = "";
+  document.getElementById('r-userid').value = "";
+  document.getElementById('r-total').value = 4;
+  goTo('s-register');
+}
+
 function generateRandomID() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    document.getElementById('r-userid').value = result;
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  document.getElementById('r-userid').value = result;
 }
 
 function showConfirmRegister() {
-const name = document.getElementById('r-name').value.trim();
-const userid = document.getElementById('r-userid').value.trim();
-const total = document.getElementById('r-total').value;
-if(!name || !userid || !total) return alert("Faltan datos");
-document.getElementById('conf-name').innerText = name;
-document.getElementById('conf-userid').innerText = userid;
-document.getElementById('conf-total').innerText = total;
-document.getElementById('modal-confirm').classList.add('active');
+  const name = document.getElementById('r-name').value.trim();
+  const userid = document.getElementById('r-userid').value.trim();
+  const total = document.getElementById('r-total').value;
+  if(!name || !userid || !total) return alert("Faltan datos");
+  document.getElementById('conf-name').innerText = name;
+  document.getElementById('conf-userid').innerText = userid;
+  document.getElementById('conf-total').innerText = total;
+  document.getElementById('modal-confirm').classList.add('active');
 }
 
 async function doRegister() {
-const userid = document.getElementById('r-userid').value.trim();
-const name = document.getElementById('r-name').value.trim();
-const total = parseInt(document.getElementById('r-total').value);
+  const userid = document.getElementById('r-userid').value.trim();
+  const name = document.getElementById('r-name').value.trim();
+  const total = parseInt(document.getElementById('r-total').value);
 
-// COMPROBACIÓN DE EXISTENCIA DEL IDENTIFICADOR
-const checkRes = await fetch(`${BASE_URL}/alumnos/${userid}.json`);
-const existingUser = await checkRes.json();
-if(existingUser) {
+  const check = await fetch(`${BASE_URL}/alumnos/${userid}.json`);
+  const exist = await check.json();
+  if(exist) {
     document.getElementById('modal-confirm').classList.remove('active');
-    return alert("Ese identificador ya está en uso. Por favor, elige otro o genera uno nuevo.");
-}
+    return alert("Ese identificador ya está en uso.");
+  }
 
-const nuevo = { nombre: name, userid: userid, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
-await fetch(`${BASE_URL}/alumnos/${userid}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
-document.getElementById('modal-confirm').classList.remove('active');
-document.getElementById('r-name').value = ""; document.getElementById('r-userid').value = "";
-showToast("Registrado"); goTo('s-login');
+  const nuevo = { nombre: name, userid: userid, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
+  await fetch(`${BASE_URL}/alumnos/${userid}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
+  document.getElementById('modal-confirm').classList.remove('active');
+  showToast("Registrado"); 
+  document.getElementById('l-userid').value = "";
+  goTo('s-login');
 }
 
 async function doLogin() {
-const userid = document.getElementById('l-userid').value.trim();
-if(!userid) return alert("Introduce tu identificador");
-const r = await fetch(`${BASE_URL}/alumnos/${userid}.json`);
-const u = await r.json();
-if(!u) return alert("Identificador no encontrado");
-currentUser = u;
-if(!u.configured) openSetupScreen(true); else goTo('s-main');
+  const userid = document.getElementById('l-userid').value.trim();
+  if(!userid) return alert("Introduce tu identificador");
+  const r = await fetch(`${BASE_URL}/alumnos/${userid}.json`);
+  const u = await r.json();
+  if(!u) return alert("Identificador no encontrado");
+  
+  currentUser = u; // Guardar el usuario real en memoria
+  if(!u.configured) openSetupScreen(true); else goTo('s-main');
 }
 
 function openSetupScreen(isFirstTime) {
-const slider = document.getElementById('e-slider');
-slider.max = currentUser.capacidad;
-document.getElementById('e-max-label').innerText = currentUser.capacidad;
-if(isFirstTime) {
-document.getElementById('setup-title').innerText = "¡Bienvenido!";
-document.getElementById('edit-name-section').style.display = "none";
-document.getElementById('extra-btns').style.display = "none";
-slider.value = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
-} else {
-document.getElementById('setup-title').innerText = "Ajustes";
-document.getElementById('edit-name-section').style.display = "block";
-document.getElementById('extra-btns').style.display = "block";
-document.getElementById('e-name').value = currentUser.nombre;
-slider.value = currentUser.front;
-}
-handleSliderChange(slider.value);
-goTo('s-setup');
+  const slider = document.getElementById('e-slider');
+  slider.max = currentUser.capacidad;
+  document.getElementById('e-max-label').innerText = currentUser.capacidad;
+  if(isFirstTime) {
+    document.getElementById('setup-title').innerText = "¡Bienvenido!";
+    document.getElementById('edit-name-section').style.display = "none";
+    document.getElementById('extra-btns').style.display = "none";
+    slider.value = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
+  } else {
+    document.getElementById('setup-title').innerText = "Ajustes";
+    document.getElementById('edit-name-section').style.display = "block";
+    document.getElementById('extra-btns').style.display = "block";
+    document.getElementById('e-name').value = currentUser.nombre;
+    slider.value = currentUser.front;
+  }
+  document.getElementById('e-slider-val').innerText = slider.value;
+  handleSliderChange(slider.value);
+  goTo('s-setup');
 }
 
 function handleSliderChange(val) {
-document.getElementById('e-slider-val').innerText = val;
-const btn = document.getElementById('btn-save-config');
-if (parseInt(val) > currentUser.invitadosTotales) { btn.disabled = true; btn.style.opacity = "0.4"; }
-else { btn.disabled = false; btn.style.opacity = "1"; }
+  document.getElementById('e-slider-val').innerText = val;
+  const btn = document.getElementById('btn-save-config');
+  if (parseInt(val) > currentUser.invitadosTotales) { btn.disabled = true; btn.style.opacity = "0.4"; }
+  else { btn.disabled = false; btn.style.opacity = "1"; }
 }
 
 function openEdit() { openSetupScreen(false); }
 
 async function saveConfig() {
-const newFront = parseInt(document.getElementById('e-slider').value);
-const newName = document.getElementById('e-name').value || currentUser.nombre;
-await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`, {
-method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true })
-});
-showToast("Guardado");
-goTo('s-main');
+  const newFront = parseInt(document.getElementById('e-slider').value);
+  const newName = document.getElementById('e-name').value || currentUser.nombre;
+  
+  // Actualizar en Firebase usando el ID real
+  await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`, {
+    method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true })
+  });
+  
+  showToast("Guardado");
+  goTo('s-main');
 }
 
 async function renderMain() {
-const r = await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`);
-currentUser = await r.json();
-document.getElementById('mc-name').innerText = currentUser.nombre;
-document.getElementById('mc-total').innerText = currentUser.invitadosTotales;
-document.getElementById('mc-front').innerText = currentUser.front;
-const libresMios = currentUser.capacidad - currentUser.front;
-document.getElementById('mc-free').innerText = libresMios;
-const container = document.getElementById('interchange-section');
-container.innerHTML = "";
+  // Siempre descargar los datos frescos del usuario logueado usando su userid
+  const r = await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`);
+  currentUser = await r.json();
+  
+  document.getElementById('mc-name').innerText = currentUser.nombre;
+  document.getElementById('mc-total').innerText = currentUser.invitadosTotales;
+  document.getElementById('mc-front').innerText = currentUser.front;
+  const libresMios = currentUser.capacidad - currentUser.front;
+  document.getElementById('mc-free').innerText = libresMios;
+  
+  const container = document.getElementById('interchange-section');
+  container.innerHTML = "";
 
-const rs = await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}.json`);
-const misSols = await rs.json() || {};
-const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
+  const rs = await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}.json`);
+  const misSols = await rs.json() || {};
+  const idsBloqueados = Object.values(misSols).map(s => s.targetId);
 
-if (currentUser.front >= currentUser.invitadosTotales) {
-container.innerHTML = `
-<div class="success-box">
-<p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-<p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-</div>`;
-return;
-}
+  if (currentUser.front >= currentUser.invitadosTotales) {
+    container.innerHTML = `<div class="success-box"><p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p><p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p></div>`;
+    return;
+  }
+  if (libresMios > 0) {
+    container.innerHTML = `<div class="info-box"><p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p><p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres. Úsalos en <b>Ajustes</b> antes de pedir a otros.</p></div>`;
+    return;
+  }
 
-if (libresMios > 0) {
-container.innerHTML = `
-<div class="info-box">
-<p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
-<p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
-</div>`;
-return;
-}
-const r2 = await fetch(`${BASE_URL}/alumnos.json`);
-const todos = await r2.json() || {};
-container.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; text-transform: uppercase;'>Compañeros con huecos</h4>";
-Object.values(todos).forEach(a => {
-const libres = a.capacidad - a.front;
-if(a.userid !== currentUser.userid && libres > 0 && !emailsBloqueados.includes(a.userid)) {
-const div = document.createElement('div');
-div.className="offer-card";
-div.innerHTML = `<div><b>${a.nombre}</b><br><small>${libres} libres</small></div><button class="btn btn-gold" style="width:auto; padding:6px 15px;" onclick="enviarSolicitud('${a.userid}', '${a.nombre}', ${libres})">Pedir</button>`;
-container.appendChild(div);
-}
-});
+  const r2 = await fetch(`${BASE_URL}/alumnos.json`);
+  const todos = await r2.json() || {};
+  container.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; text-transform: uppercase;'>Compañeros con huecos</h4>";
+  
+  Object.values(todos).forEach(a => {
+    const libres = a.capacidad - a.front;
+    if(a.userid !== currentUser.userid && libres > 0 && !idsBloqueados.includes(a.userid)) {
+      const div = document.createElement('div');
+      div.className="offer-card";
+      div.innerHTML = `<div><b>${a.nombre}</b><br><small>${libres} libres</small></div><button class="btn btn-gold" style="width:auto; padding:6px 15px;" onclick="enviarSolicitud('${a.userid}', '${a.nombre}', ${libres})">Pedir</button>`;
+      container.appendChild(div);
+    }
+  });
 }
 
-async function enviarSolicitud(targetEmail, targetNombre, maxDelOtro) {
-const necesito = currentUser.invitadosTotales - currentUser.front;
-const maxPermitido = Math.min(maxDelOtro, necesito);
-const n = parseInt(prompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo: ${maxPermitido})`, "1"));
-if(n > 0 && n <= maxPermitido) {
-const solId = "sol_" + Date.now();
-const sol = { desde: currentUser.nombre, desdeEmail: currentUser.userid, cantidad: n, id: solId, status: 'pending', paraNombre: targetNombre, targetEmail: targetEmail, unread: true };
-await fetch(`${BASE_URL}/solicitudes/${targetEmail}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
-await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
-showToast("Enviada"); renderMain(); checkNotifs();
-}
+async function enviarSolicitud(targetId, targetNombre, maxDelOtro) {
+  const necesito = currentUser.invitadosTotales - currentUser.front;
+  const maxPermitido = Math.min(maxDelOtro, necesito);
+  const n = parseInt(prompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo: ${maxPermitido})`, "1"));
+  if(n > 0 && n <= maxPermitido) {
+    const solId = "sol_" + Date.now();
+    const sol = { 
+      desde: currentUser.nombre, 
+      desdeId: currentUser.userid, 
+      cantidad: n, 
+      id: solId, 
+      status: 'pending', 
+      paraNombre: targetNombre, 
+      targetId: targetId, 
+      unread: true 
+    };
+    await fetch(`${BASE_URL}/solicitudes/${targetId}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
+    await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
+    showToast("Enviada"); renderMain(); checkNotifs();
+  }
 }
 
 async function checkNotifs() {
-const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}.json`);
-const data = await r.json();
-let hasUnread = false;
-if(data) Object.values(data).forEach(s => { if(s.unread) hasUnread = true; });
-document.getElementById('mail-notif').style.display = hasUnread ? 'block' : 'none';
+  if(!currentUser) return;
+  const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}.json`);
+  const data = await r.json();
+  let hasUnread = false;
+  if(data) Object.values(data).forEach(s => { if(s.unread) hasUnread = true; });
+  document.getElementById('mail-notif').style.display = hasUnread ? 'block' : 'none';
 }
 
 async function openNotifs() {
-goTo('s-notifs');
-const list = document.getElementById('notif-list'); list.innerHTML = "";
-const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}.json`);
-const data = await r.json();
-if(!data) { list.innerHTML = "No hay solicitudes."; return; }
+  goTo('s-notifs');
+  const list = document.getElementById('notif-list'); list.innerHTML = "";
+  const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}.json`);
+  const data = await r.json();
+  if(!data) { list.innerHTML = "No hay solicitudes."; return; }
 
-Object.keys(data).forEach(id => {
-const s = data[id];
-const d = document.createElement('div'); d.className = "card notif-card";
-if (s.desdeEmail !== currentUser.userid) {
-// RECIBIDA
-d.innerHTML = `<p><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
-<div style="display:flex; gap:8px; margin-top:10px">
-<button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'accepted', '${s.desde}')">Aceptar</button>
-<button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'rejected', '${s.desde}')">Rechazar</button>
-</div>`;
-} else if (s.status === 'pending') {
-// ENVIADA - ESPERANDO
-d.classList.add(s.unread ? 'notif-pending-unread' : 'notif-pending-read');
-d.innerHTML = `<p style="text-align:center">Esperando a <b>${s.paraNombre}</b> por ${s.cantidad} hueco(s)...</p>`;
-if(s.unread) d.innerHTML += `<button class="btn" style="margin-top:10px" onclick="marcarLeido('${id}')">Marcar como leído</button>`;
-} else {
-// FEEDBACK
-const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
-d.innerHTML = `<p style="text-align:center"><b>${s.paraNombre}</b> ${msg} tu solicitud.</p>
-<button class="btn btn-gold" style="margin-top:10px" onclick="borrarSol('${id}')">Aceptar</button>`;
-}
-list.appendChild(d);
-});
+  Object.keys(data).forEach(id => {
+    const s = data[id];
+    const d = document.createElement('div'); d.className = "card notif-card";
+    
+    if (s.desdeId !== currentUser.userid) {
+      // RECIBIDA
+      d.innerHTML = `<p><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
+        <div style="display:flex; gap:8px; margin-top:10px">
+          <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeId}', ${s.cantidad}, 'accepted', '${s.desde}')">Aceptar</button>
+          <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeId}', ${s.cantidad}, 'rejected', '${s.desde}')">Rechazar</button>
+        </div>`;
+    } else if (s.status === 'pending') {
+      // ENVIADA - ESPERANDO (Fondo blanco vs gris)
+      d.classList.add(s.unread ? 'notif-pending-unread' : 'notif-pending-read');
+      d.innerHTML = `<p style="text-align:center">Esperando a <b>${s.paraNombre}</b> por ${s.cantidad} hueco(s)...</p>`;
+      if(s.unread) d.innerHTML += `<button class="btn" style="margin-top:10px" onclick="marcarLeido('${id}')">Marcar como leído</button>`;
+    } else {
+      // FEEDBACK
+      const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
+      const color = s.status === 'accepted' ? 'var(--green)' : 'var(--red)';
+      d.innerHTML = `<p style="text-align:center; color:${color}; font-weight:600;"><b>${s.paraNombre}</b> ${msg} tu solicitud.</p>
+        <button class="btn btn-gold" style="margin-top:10px" onclick="borrarSol('${id}')">Aceptar</button>`;
+    }
+    list.appendChild(d);
+  });
 }
 
-async function gestionarSol(id, solEmail, cant, status, solNombre) {
-if(status === 'accepted') {
-const rC = await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`);
-const me = await rC.json();
-if((me.capacidad - me.front) < cant) return alert("No tienes huecos.");
-await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: me.capacidad - cant, front: Math.min(me.front, me.capacidad - cant) }) });
-const rO = await fetch(`${BASE_URL}/alumnos/${solEmail}.json`);
-const ot = await rO.json();
-await fetch(`${BASE_URL}/alumnos/${solEmail}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: ot.capacidad + cant, front: ot.front + cant }) });
-}
-await fetch(`${BASE_URL}/solicitudes/${solEmail}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: status, unread: true, paraNombre: currentUser.nombre, cantidad: cant }) });
-await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}/${id}.json`, { method: 'DELETE' });
-openNotifs();
+async function gestionarSol(id, solIdSolicitante, cant, status, solNombre) {
+  if(status === 'accepted') {
+    const rSolicitante = await fetch(`${BASE_URL}/alumnos/${solIdSolicitante}.json`);
+    const sObj = await rSolicitante.json();
+    const need = sObj.invitadosTotales - sObj.front;
+
+    let fCant = cant;
+    if(cant > need) {
+      if(!confirm(`El número solicitado supera el cupo de ${solNombre}. Solo necesita ${need}. ¿Aceptar dándole solo ${need}?`)) return;
+      fCant = need;
+    }
+
+    const rYo = await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`);
+    const me = await rYo.json();
+    if((me.capacidad - me.front) < fCant) return alert("No tienes huecos suficientes.");
+
+    // Actualizar mis datos
+    await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`, { 
+      method: 'PATCH', body: JSON.stringify({ capacidad: me.capacidad - fCant, front: Math.min(me.front, me.capacidad - fCant) }) 
+    });
+    // Actualizar datos del otro
+    const newF = sObj.front + fCant;
+    await fetch(`${BASE_URL}/alumnos/${solIdSolicitante}.json`, { 
+      method: 'PATCH', body: JSON.stringify({ capacidad: sObj.capacidad + fCant, front: newF }) 
+    });
+
+    // Feedback al otro
+    await fetch(`${BASE_URL}/solicitudes/${solIdSolicitante}/${id}.json`, { 
+      method: 'PUT', body: JSON.stringify({ status: 'accepted', unread: true, paraNombre: currentUser.nombre, cantidad: fCant, desdeId: solIdSolicitante, targetId: currentUser.userid }) 
+    });
+
+    // Limpieza global si el otro se llenó
+    if(newF >= sObj.invitadosTotales) {
+      const rAll = await fetch(`${BASE_URL}/solicitudes/${solIdSolicitante}.json`);
+      const all = await rAll.json();
+      if(all) {
+        for(let k in all) {
+          if(all[k].desdeId === solIdSolicitante && all[k].status === 'pending') {
+            await fetch(`${BASE_URL}/solicitudes/${all[k].targetId}/${k}.json`, { method: 'DELETE' });
+            await fetch(`${BASE_URL}/solicitudes/${solIdSolicitante}/${k}.json`, { method: 'DELETE' });
+          }
+        }
+      }
+    }
+  } else {
+    await fetch(`${BASE_URL}/solicitudes/${solIdSolicitante}/${id}.json`, { 
+      method: 'PUT', body: JSON.stringify({ status: 'rejected', unread: true, paraNombre: currentUser.nombre, cantidad: cant, desdeId: solIdSolicitante, targetId: currentUser.userid }) 
+    });
+  }
+  await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}/${id}.json`, { method: 'DELETE' });
+  openNotifs();
 }
 
 async function marcarLeido(id) {
-await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ unread: false }) });
-openNotifs();
+  await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ unread: false }) });
+  openNotifs();
 }
 
 async function borrarSol(id) {
-await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}/${id}.json`, { method: 'DELETE' });
-openNotifs();
+  await fetch(`${BASE_URL}/solicitudes/${currentUser.userid}/${id}.json`, { method: 'DELETE' });
+  openNotifs();
 }
 
-function logout() { currentUser = null; goTo('s-login'); }
+function logout() { 
+  document.getElementById('l-userid').value = "";
+  currentUser = null; 
+  goTo('s-login'); 
+}
+
 async function deleteAccount() {
-if(confirm("¿Borrar?")) { await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`, { method: 'DELETE' }); logout(); }
+  if(confirm("¿Borrar?")) { 
+    await fetch(`${BASE_URL}/alumnos/${currentUser.userid}.json`, { method: 'DELETE' }); 
+    logout(); 
+  }
 }
 </script>
 </body>
