@@ -74,7 +74,7 @@
         <input class="form-input" id="l-id" type="text" placeholder="Tu identificador personal">
       </div>
       <button class="btn btn-gold" onclick="doLogin()">Entrar</button>
-      <button class="btn" style="margin-top:10px; border:none;" onclick="goTo('s-register')">Crear cuenta nueva</button>
+      <button class="btn" style="margin-top:10px; border:none;" onclick="abrirRegistro()">Crear cuenta nueva</button>
     </div>
   </div>
  
@@ -182,6 +182,14 @@
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     if(id === 's-main') { renderMain(); checkNotifs(); }
+  }
+ 
+  function abrirRegistro() {
+    document.getElementById('r-name').value = '';
+    document.getElementById('r-id').value = '';
+    document.getElementById('r-total').value = '4';
+    document.getElementById('r-id-error').style.display = 'none';
+    goTo('s-register');
   }
  
   function showToast(m) { 
@@ -395,10 +403,35 @@
       const rO = await fetch(`${BASE_URL}/alumnos/${solId}.json`);
       const ot = await rO.json();
       await fetch(`${BASE_URL}/alumnos/${solId}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: ot.capacidad + cant, front: ot.front + cant }) });
+ 
+      // Si el solicitante ya tiene el cupo completo, cancelar todas sus solicitudes pendientes
+      const otActualizado = { ...ot, capacidad: ot.capacidad + cant, front: ot.front + cant };
+      if (otActualizado.front >= otActualizado.invitadosTotales) {
+        await cancelarPendientesDelSolicitante(solId, id);
+      }
     }
     await fetch(`${BASE_URL}/solicitudes/${solId}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: status, unread: true, paraNombre: currentUser.nombre, cantidad: cant }) });
     await fetch(`${BASE_URL}/solicitudes/${currentUser.idKey}/${id}.json`, { method: 'DELETE' });
     openNotifs();
+  }
+ 
+  // Elimina del buzón de cada destinatario las solicitudes pendientes del solicitante,
+  // excepto la que se acaba de gestionar (que ya se actualiza por separado).
+  async function cancelarPendientesDelSolicitante(solId, solIdGestionado) {
+    const rSols = await fetch(`${BASE_URL}/solicitudes/${solId}.json`);
+    const susSols = await rSols.json();
+    if (!susSols) return;
+    const promises = Object.keys(susSols).map(async (sid) => {
+      const s = susSols[sid];
+      if (sid === solIdGestionado) return; // esta ya se gestiona arriba
+      if (s.status === 'pending' && s.desdeId === solId) {
+        // Borrar del buzón del destinatario
+        await fetch(`${BASE_URL}/solicitudes/${s.targetId}/${sid}.json`, { method: 'DELETE' });
+        // Borrar del buzón del propio solicitante
+        await fetch(`${BASE_URL}/solicitudes/${solId}/${sid}.json`, { method: 'DELETE' });
+      }
+    });
+    await Promise.all(promises);
   }
  
   async function marcarLeido(id) {
@@ -418,3 +451,4 @@
 </script>
 </body>
 </html>
+ 
