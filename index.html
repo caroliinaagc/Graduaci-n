@@ -6,7 +6,6 @@
 <title>Gestión de Asientos · Graduación 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* Mantengo tus estilos originales y añado ajustes para el registro */
   :root {
     --cream: #F5F1EA; --cream-dark: #EAE4D8; --ink: #1A1714; --ink-soft: #4A453F;
     --ink-muted: #8A847C; --gold: #C4973A; --gold-light: #F0E4C4; --green: #2D6A4F;
@@ -21,42 +20,28 @@
   .header-pre { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 4px; }
   .header-title { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1.2; }
   .header-sub { font-size: 13px; color: var(--ink-muted); margin-top: 4px; }
-  .header-sub a { color: var(--gold); text-decoration: none; font-weight: 600; }
-  .header-sub a:hover { text-decoration: underline; }
   .screen { display: none; }
   .screen.active { display: block; }
   .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin-bottom: 12px; box-shadow: var(--shadow); }
   .my-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; position: relative; overflow: hidden; }
   .my-card .label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55; margin-bottom: 2px; }
   .my-card .value { font-size: 22px; font-weight: 600; }
-  .my-card .name-row { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 14px; }
-  .stats-row { display: flex; gap: 20px; }
-  .stat-block { flex: 1; }
-  .seat-dots { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
-  .dot { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
-  .dot-front { background: var(--gold); color: #fff; }
-  .dot-front-free { background: rgba(196,151,58,0.2); border: 1.5px dashed var(--gold); color: var(--gold); }
-  .dot-back { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.55); }
+  .my-card .name-row { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 8px; }
+  .stats-row { display: flex; gap: 20px; margin-bottom: 15px; }
   .offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; }
   .offer-row { display: flex; align-items: center; gap: 12px; }
   .avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
-  .pill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-  .pill-green { background: var(--green-light); color: var(--green); }
-  .pill-orange { background: var(--orange-light); color: var(--orange); }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border-strong); background: #fff; transition: all 0.15s; }
   .btn-primary { background: var(--ink); color: #fff; border-color: var(--ink); }
   .btn-gold { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .btn-outline-white { background: transparent; color: #fff; border-color: rgba(255,255,255,0.3); font-size: 11px; padding: 6px 12px; margin-top: 5px; }
   .btn-full { width: 100%; margin-bottom: 10px; }
   .form-group { margin-bottom: 15px; }
   .form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 5px; }
   .form-input { width: 100%; padding: 11px; border-radius: 10px; border: 1.5px solid var(--border-strong); }
-  .tabs { display: flex; border-bottom: 1.5px solid var(--border); margin-bottom: 20px; }
-  .tab-btn { flex: 1; padding: 12px; cursor: pointer; border: none; background: none; color: var(--ink-muted); font-weight: 600; }
-  .tab-btn.active { color: var(--gold); border-bottom: 2.5px solid var(--gold); }
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 20px; border-radius: 20px; transition: 0.3s; z-index: 1000; }
   .toast.show { transform: translateX(-50%) translateY(0); }
+  .actions-grid { display: flex; gap: 8px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -64,25 +49,21 @@
   <div class="header">
     <div class="header-pre">Acto de graduación</div>
     <div class="header-title">Gestión de Asientos</div>
-    <div class="header-sub" id="header-sub">
-      Curso <a href="https://tu-web-de-graduacion.com" target="_blank">2025–2026</a>
-    </div>
+    <div class="header-sub">Curso 2025–2026</div>
   </div>
 
   <div id="s-login" class="screen active">
     <div class="card" style="max-width:400px;margin:0 auto">
-      <p style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:4px">¡Bienvenido!</p>
-      <p style="font-size:13px;color:var(--ink-muted);margin-bottom:20px">Inicia sesión o crea tu cuenta</p>
-      
+      <p style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:4px">Iniciar Sesión</p>
+      <p style="font-size:13px;color:var(--ink-muted);margin-bottom:20px">Accede con tu correo registrado</p>
       <div class="form-group">
         <label class="form-label">Correo electrónico</label>
         <input class="form-input" id="l-email" type="email" placeholder="tu@correo.com" />
       </div>
-
-      <div id="l-error" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none"></div>
-      
+      <div id="l-error" style="color:var(--red);font-size:12px;margin-bottom:12px;display:none"></div>
       <button class="btn btn-primary btn-full" onclick="doLogin()">Entrar →</button>
-      <button class="btn btn-full" onclick="goTo('s-register')">No tengo cuenta, Registrarse</button>
+      <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+      <button class="btn btn-full" onclick="goTo('s-register')">Registrar nuevo usuario</button>
     </div>
   </div>
 
@@ -90,69 +71,60 @@
     <div class="card" style="max-width:400px;margin:0 auto">
       <p style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:4px">Nuevo Registro</p>
       <p style="font-size:13px;color:var(--ink-muted);margin-bottom:20px">Crea tu perfil de alumno</p>
-      
       <div class="form-group">
-        <label class="form-label">Nombre Completo</label>
-        <input class="form-input" id="r-name" type="text" placeholder="Ej. Juan Pérez" />
+        <label class="form-label">Nombre y Apellidos</label>
+        <input class="form-input" id="r-name" type="text" placeholder="Ej. Juan Pérez García" />
       </div>
       <div class="form-group">
         <label class="form-label">Correo electrónico</label>
         <input class="form-input" id="r-email" type="email" placeholder="tu@correo.com" />
       </div>
-      <div class="form-group">
-        <label class="form-label">¿Cuántos invitados traes en total? (Máx 12)</label>
-        <input class="form-input" id="r-invitados" type="number" min="1" max="12" value="4" />
-      </div>
-
-      <div id="r-error" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none"></div>
-      
-      <button class="btn btn-gold btn-full" onclick="doRegister()">Crear cuenta y entrar</button>
-      <button class="btn btn-full" onclick="goTo('s-login')">Volver al inicio</button>
+      <div id="r-error" style="color:var(--red);font-size:12px;margin-bottom:12px;display:none"></div>
+      <button class="btn btn-gold btn-full" onclick="doRegister()">Registrar Usuario</button>
+      <button class="btn btn-full" onclick="goTo('s-login')">Volver al Inicio</button>
     </div>
   </div>
 
   <div id="s-setup" class="screen">
-    <p style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px">Configura tus asientos</p>
+    <p style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px">Mis Asientos</p>
     <div class="card">
-      <div class="info-box" style="background:var(--cream-dark); padding:10px; border-radius:8px; margin-bottom:15px;">
-        Tienes <strong id="setup-total">0</strong> invitados. Tienes 4 huecos en primera fila por defecto.
-      </div>
-      <p style="font-weight:600;margin-bottom:10px">¿Cuántos de tus invitados irán en primera fila?</p>
+      <p style="font-weight:600;margin-bottom:10px">¿Cuántos de tus 4 asientos vas a usar?</p>
       <input type="range" min="0" max="4" value="4" id="setup-slider" style="width:100%" oninput="updateSetupPreview()" />
-      <div style="text-align:center; font-size:24px; font-weight:bold; color:var(--gold); margin:10px 0;" id="setup-front-val">4</div>
-      <button class="btn btn-gold btn-full" onclick="confirmSetup()">Confirmar y Ver Intercambios</button>
+      <div style="text-align:center; font-size:32px; font-weight:bold; color:var(--gold); margin:15px 0;" id="setup-front-val">4</div>
+      <button class="btn btn-gold btn-full" onclick="confirmSetup()">Guardar y Continuar →</button>
     </div>
   </div>
 
   <div id="s-main" class="screen">
-    <div class="my-card" id="my-card">
+    <div class="my-card">
       <div class="name-row" id="mc-name">—</div>
       <div class="stats-row">
         <div class="stat-block"><div class="label">En 1ª Fila</div><div class="value" id="mc-front">0</div></div>
-        <div class="stat-block"><div class="label">Libres para dar</div><div class="value" id="mc-free" style="color:var(--gold)">0</div></div>
+        <div class="stat-block"><div class="label">Libres</div><div class="value" id="mc-free" style="color:var(--gold)">0</div></div>
+      </div>
+      <div class="actions-grid">
+        <button class="btn btn-outline-white" onclick="goTo('s-setup')">✎ Editar</button>
+        <button class="btn btn-outline-white" style="border-color:var(--red-light); color:var(--red-light);" onclick="logout()">✕ Cerrar Sesión</button>
       </div>
     </div>
-    <div class="tabs">
-      <button class="tab-btn active">Alumnos con huecos libres</button>
-    </div>
-    <div id="tab-offers" class="tab-content active"></div>
+    <p style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-muted); margin:20px 0 10px;">Compañeros con huecos libres</p>
+    <div id="tab-offers"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// Base de datos local (se inicia con tus ejemplos)
-let ALUMNOS = [
-  { id: 1, nombre: "Laura Gómez Ruiz", email: "laura@correo.com", invitados: 4, front: 4, configured: true },
-  { id: 2, nombre: "Marcos Rodríguez", email: "marcos@correo.com", invitados: 6, front: 2, configured: true }
-];
-
+// "Base de datos" temporal
+let ALUMNOS = []; 
 let currentUser = null;
 
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  // Limpiar errores al cambiar de pantalla
+  document.getElementById('l-error').style.display = 'none';
+  document.getElementById('r-error').style.display = 'none';
 }
 
 function showToast(msg) {
@@ -161,64 +133,64 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// LÓGICA DE REGISTRO
 function doRegister() {
   const name = document.getElementById('r-name').value.trim();
   const email = document.getElementById('r-email').value.trim().toLowerCase();
-  const inv = parseInt(document.getElementById('r-invitados').value);
   const err = document.getElementById('r-error');
 
-  if(!name || !email || isNaN(inv)) {
-    err.textContent = "Por favor, rellena todos los campos.";
+  if(!name || !email) {
+    err.textContent = "Error: Rellena todos los campos.";
     err.style.display = "block";
     return;
   }
 
-  // Verificar si el correo ya existe
   if(ALUMNOS.find(a => a.email === email)) {
-    err.textContent = "Este correo electrónico ya está registrado.";
+    err.textContent = "Error: Este correo ya está registrado.";
     err.style.display = "block";
     return;
   }
 
-  const nuevo = {
-    id: Date.now(),
-    nombre: name,
-    email: email,
-    invitados: inv,
-    front: 4, // Por defecto
-    configured: false
-  };
-
-  ALUMNOS.push(nuevo);
-  currentUser = nuevo;
-  err.style.display = "none";
+  // Guardar en la lista
+  ALUMNOS.push({ id: Date.now(), nombre: name, email: email, front: 4, configured: false });
   
-  document.getElementById('setup-total').textContent = inv;
-  goTo('s-setup');
+  // Limpiar campos y volver al login
+  document.getElementById('r-name').value = '';
+  document.getElementById('r-email').value = '';
+  showToast("¡Usuario registrado con éxito! Ya puedes entrar.");
+  goTo('s-login');
 }
 
-// LÓGICA DE LOGIN
 function doLogin() {
   const email = document.getElementById('l-email').value.trim().toLowerCase();
   const err = document.getElementById('l-error');
-  
   const alumno = ALUMNOS.find(a => a.email === email);
-  
+
+  if(!email) {
+    err.textContent = "Introduce tu correo.";
+    err.style.display = "block";
+    return;
+  }
+
   if(!alumno) {
-    err.textContent = "Correo no encontrado. ¿Te has registrado ya?";
+    err.textContent = "Este correo no está registrado.";
     err.style.display = "block";
     return;
   }
 
   currentUser = alumno;
   if(!alumno.configured) {
-    document.getElementById('setup-total').textContent = alumno.invitados;
     goTo('s-setup');
   } else {
     renderMain();
     goTo('s-main');
   }
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('l-email').value = '';
+  showToast("Sesión cerrada");
+  goTo('s-login');
 }
 
 function updateSetupPreview() {
@@ -228,7 +200,7 @@ function updateSetupPreview() {
 function confirmSetup() {
   currentUser.front = parseInt(document.getElementById('setup-slider').value);
   currentUser.configured = true;
-  showToast("¡Configuración guardada!");
+  showToast("Configuración guardada");
   renderMain();
   goTo('s-main');
 }
@@ -240,29 +212,22 @@ function renderMain() {
 
   const container = document.getElementById('tab-offers');
   container.innerHTML = '';
-
-  // Mostrar otros alumnos que tienen huecos libres (4 - front > 0)
   const otros = ALUMNOS.filter(a => a.id !== currentUser.id && (4 - a.front) > 0);
 
   if(otros.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:40px; color:gray;">Nadie ha liberado asientos todavía.</div>';
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:gray; font-size:13px;">No hay huecos libres todavía.</div>';
     return;
   }
 
   otros.forEach(a => {
-    const libres = 4 - a.front;
     const card = document.createElement('div');
     card.className = 'offer-card';
     card.innerHTML = `
       <div class="offer-row">
         <div class="avatar" style="background:var(--gold-light); color:var(--gold)">${a.nombre.charAt(0)}</div>
-        <div style="flex:1">
-          <div style="font-weight:600">${a.nombre}</div>
-          <div style="font-size:12px; color:gray">Tiene huecos libres</div>
-        </div>
-        <span class="pill pill-green">${libres} disponibles</span>
+        <div style="flex:1"><div style="font-weight:600">${a.nombre}</div><div style="font-size:12px; color:gray">Libres: ${4 - a.front}</div></div>
+        <button class="btn btn-sm btn-gold" onclick="showToast('Solicitado a ${a.nombre.split(' ')[0]}')">Solicitar</button>
       </div>
-      <button class="btn btn-sm btn-gold" style="margin-top:10px; width:100%" onclick="alert('Solicitud enviada a ${a.nombre}')">Solicitar asientos</button>
     `;
     container.appendChild(card);
   });
