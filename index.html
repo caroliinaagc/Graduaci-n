@@ -48,8 +48,8 @@
   .toast.show { transform: translateX(-50%) translateY(0); }
 
   .warning-box { background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; display: none; }
-  .info-box { background: #fefce8; border: 1px solid #fef08a; color: #854d0e; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
+  .info-box { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
   .modal-overlay.active { display: flex; }
 </style>
@@ -136,6 +136,7 @@
         <button class="btn" style="background:rgba(255,255,255,0.1); color:white; border:none;" onclick="logout()">Salir</button>
       </div>
     </div>
+    
     <div id="interchange-section"></div>
   </div>
 
@@ -234,9 +235,10 @@
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
       method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true }) 
     });
+    showToast("Guardado con éxito");
     const r = await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`);
     currentUser = await r.json();
-    showToast("Guardado con éxito"); goTo('s-main');
+    goTo('s-main');
   }
 
   async function renderMain() {
@@ -251,17 +253,27 @@
     const container = document.getElementById('interchange-section');
     container.innerHTML = "";
 
+    // 1. CONDICIÓN: CUPO COMPLETO
     if (currentUser.front >= currentUser.invitadosTotales) {
-        container.innerHTML = `<div class="success-box"><p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p><p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p></div>`;
+        container.innerHTML = `
+            <div class="success-box">
+                <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
+                <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
+            </div>`;
         return;
     }
 
-    const invitadosSinSentar = currentUser.invitadosTotales - currentUser.front;
-    if (libresMios >= invitadosSinSentar) {
-        container.innerHTML = `<div class="info-box"><p style="font-size: 16px; margin-bottom: 10px;">⚠️ <b>Tienes huecos disponibles</b></p><p style="font-size: 13px; opacity: 0.9;">Todavía tienes asientos libres propios para ubicar a tus invitados. Ve a <b>Ajustes</b> para asignarlos antes de pedir a otros.</p></div>`;
+    // 2. CONDICIÓN: TIENE HUECOS PROPIOS SIN USAR
+    if (libresMios > 0) {
+        container.innerHTML = `
+            <div class="info-box">
+                <p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
+                <p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
+            </div>`;
         return;
     }
 
+    // 3. MOSTRAR LISTA DE COMPAÑEROS SI NO SE CUMPLEN LAS ANTERIORES
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     container.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; margin-bottom:10px; text-transform: uppercase;'>Compañeros con huecos</h4>";
@@ -271,7 +283,9 @@
       if(a.email !== currentUser.email && libres > 0) {
         const div = document.createElement('div');
         div.className="offer-card";
-        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div><button class="btn btn-gold" style="width:auto; padding:6px 15px;" onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
+        div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div>
+                         <button class="btn btn-gold" style="width:auto; padding:6px 15px;" 
+                         onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
         container.appendChild(div);
       }
     });
@@ -305,7 +319,11 @@
     Object.keys(data).forEach(id => {
       const s = data[id];
       const d = document.createElement('div'); d.className = "card";
-      d.innerHTML = `<p style='margin-bottom:12px; font-size:14px;'><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p><div style="display:flex; gap:8px;"><button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'aceptar')">Aceptar</button><button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', null, null, 'rechazar')">Rechazar</button></div>`;
+      d.innerHTML = `<p style='margin-bottom:12px; font-size:14px;'><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'aceptar')">Aceptar</button>
+          <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', null, null, 'rechazar')">Rechazar</button>
+        </div>`;
       list.appendChild(d);
     });
   }
