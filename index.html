@@ -64,7 +64,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: 
 <h2 style="font-family:'DM Serif Display'; margin-bottom: 25px;">Graduación 2026</h2>
 <div class="form-group">
 <label class="form-label">Identificador</label>
-<input class="form-input" id="l-id" type="text" placeholder="Tu código personal">
+<input class="form-input" id="l-id" type="text" placeholder="Introduce tu ID">
 </div>
 <button class="btn btn-gold" onclick="doLogin()">Entrar</button>
 <button class="btn" style="margin-top:10px; border:none;" onclick="goToRegister()">Crear cuenta nueva</button>
@@ -77,10 +77,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: 
 <div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García"></div>
 <div class="form-group">
     <label class="form-label">Identificador</label>
-    <p style="font-size: 11px; color: #666; margin-top: -5px; margin-bottom: 5px;">No compartas este código con nadie.</p>
+    <p style="font-size: 11px; color: #666; margin-top: -5px; margin-bottom: 5px;">Este código es privado, no lo compartas con nadie.</p>
     <div style="display: flex; gap: 8px;">
         <input class="form-input" id="r-id" type="text" placeholder="Crea tu código">
-        <button class="btn" style="width: auto; padding: 0 15px;" onclick="generateID()">Generar</button>
+        <button class="btn" style="width: auto; padding: 0 15px;" onclick="generateRandomID()">Generar</button>
     </div>
 </div>
 <div class="form-group"><label class="form-label">Número de invitados</label><input class="form-input" id="r-total" type="number" value="4"></div>
@@ -166,13 +166,16 @@ document.getElementById(id).classList.add('active');
 if(id === 's-main') { renderMain(); checkNotifs(); }
 }
 
-function generateID() {
+function showToast(m) {
+const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show');
+setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function generateRandomID() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    document.getElementById('r-id').value = result;
+    let res = '';
+    for (let i = 0; i < 6; i++) { res += chars.charAt(Math.floor(Math.random() * chars.length)); }
+    document.getElementById('r-id').value = res;
 }
 
 function goToRegister() {
@@ -182,44 +185,40 @@ function goToRegister() {
     goTo('s-register');
 }
 
-function showToast(m) {
-const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show');
-setTimeout(()=>t.classList.remove('show'),3000);
-}
-
 function showConfirmRegister() {
 const name = document.getElementById('r-name').value.trim();
-const email = document.getElementById('r-id').value.trim();
+const id = document.getElementById('r-id').value.trim();
 const total = document.getElementById('r-total').value;
-if(!name || !email || !total) return alert("Faltan datos");
+if(!name || !id || !total) return alert("Faltan datos");
 document.getElementById('conf-name').innerText = name;
-document.getElementById('conf-email').innerText = email;
+document.getElementById('conf-userid').innerText = id; // Corregido
+document.getElementById('conf-email').innerText = id;
 document.getElementById('conf-total').innerText = total;
 document.getElementById('modal-confirm').classList.add('active');
 }
 
 async function doRegister() {
-const emailKey = document.getElementById('r-id').value.trim();
+const idKey = document.getElementById('r-id').value.trim();
 const name = document.getElementById('r-name').value.trim();
 const total = parseInt(document.getElementById('r-total').value);
 
-// Comprobación de existencia
-const r = await fetch(`${BASE_URL}/alumnos/${emailKey}.json`);
+const r = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
 const existing = await r.json();
 if(existing) {
     document.getElementById('modal-confirm').classList.remove('active');
     return alert("El identificador ya está siendo utilizado por otro usuario, pruebe uno nuevo");
 }
 
-const nuevo = { nombre: name, email: emailKey, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
-await fetch(`${BASE_URL}/alumnos/${emailKey}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
+const nuevo = { nombre: name, email: idKey, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
+await fetch(`${BASE_URL}/alumnos/${idKey}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
 document.getElementById('modal-confirm').classList.remove('active');
 showToast("Registrado"); goTo('s-login');
 }
 
 async function doLogin() {
-const emailKey = document.getElementById('l-id').value.trim();
-const r = await fetch(`${BASE_URL}/alumnos/${emailKey}.json`);
+const idKey = document.getElementById('l-id').value.trim();
+if(!idKey) return alert("Introduce tu ID");
+const r = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
 const u = await r.json();
 if(!u) return alert("Identificador no registrado");
 currentUser = u;
@@ -281,20 +280,12 @@ const misSols = await rs.json() || {};
 const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
 if (currentUser.front >= currentUser.invitadosTotales) {
-container.innerHTML = `
-<div class="success-box">
-<p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-<p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-</div>`;
+container.innerHTML = `<div class="success-box"><p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p><p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p></div>`;
 return;
 }
 
 if (libresMios > 0) {
-container.innerHTML = `
-<div class="info-box">
-<p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
-<p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
-</div>`;
+container.innerHTML = `<div class="info-box"><p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p><p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p></div>`;
 return;
 }
 const r2 = await fetch(`${BASE_URL}/alumnos.json`);
@@ -325,6 +316,7 @@ showToast("Enviada"); renderMain(); checkNotifs();
 }
 
 async function checkNotifs() {
+if(!currentUser) return;
 const r = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
 const data = await r.json();
 let hasUnread = false;
@@ -343,19 +335,16 @@ Object.keys(data).forEach(id => {
 const s = data[id];
 const d = document.createElement('div'); d.className = "card notif-card";
 if (s.desdeEmail !== currentUser.email) {
-// RECIBIDA
 d.innerHTML = `<p><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
 <div style="display:flex; gap:8px; margin-top:10px">
 <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'accepted', '${s.desde}')">Aceptar</button>
 <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'rejected', '${s.desde}')">Rechazar</button>
 </div>`;
 } else if (s.status === 'pending') {
-// ENVIADA - ESPERANDO
 d.classList.add(s.unread ? 'notif-pending-unread' : 'notif-pending-read');
 d.innerHTML = `<p style="text-align:center">Esperando a <b>${s.paraNombre}</b> por ${s.cantidad} hueco(s)...</p>`;
 if(s.unread) d.innerHTML += `<button class="btn" style="margin-top:10px" onclick="marcarLeido('${id}')">Marcar como leído</button>`;
 } else {
-// FEEDBACK
 const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
 d.innerHTML = `<p style="text-align:center"><b>${s.paraNombre}</b> ${msg} tu solicitud.</p>
 <button class="btn btn-gold" style="margin-top:10px" onclick="borrarSol('${id}')">Aceptar</button>`;
@@ -389,15 +378,20 @@ await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`, { method:
 openNotifs();
 }
 
-function logout() { 
-    currentUser = null; 
-    document.getElementById('l-id').value = "";
-    goTo('s-login'); 
-}
-
+function logout() { currentUser = null; document.getElementById('l-id').value = ""; goTo('s-login'); }
 async function deleteAccount() {
 if(confirm("¿Borrar?")) { await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'DELETE' }); logout(); }
 }
+
+// ==========================================
+// CÓDIGO DE LIMPIEZA (ELIMÍNALO TRAS EL PRIMER USO)
+// ==========================================
+async function limpiarTodo() {
+    await fetch(`${BASE_URL}.json`, { method: 'DELETE' });
+    alert("Base de datos reseteada. Ya puedes borrar este código y registrar cuentas nuevas.");
+}
+limpiarTodo();
+// ==========================================
 </script>
 </body>
 </html>
