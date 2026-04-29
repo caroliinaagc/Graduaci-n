@@ -20,30 +20,28 @@
   .header-pre { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 4px; }
   .header-title { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1.2; }
   .header-sub { font-size: 13px; color: var(--ink-muted); margin-top: 4px; }
-  .screen { display: none; }
-  .screen.active { display: block; }
+  .screen { display: none; } .screen.active { display: block; }
   .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin-bottom: 12px; box-shadow: var(--shadow); }
-  .my-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; position: relative; overflow: hidden; }
-  .my-card .label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55; margin-bottom: 2px; }
+  .my-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; position: relative; }
+  .my-card .label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55; }
   .my-card .value { font-size: 18px; font-weight: 600; }
   .my-card .name-row { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-  .offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; }
-  .offer-row { display: flex; align-items: center; gap: 12px; }
-  .avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border-strong); background: #fff; transition: all 0.15s; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border-strong); background: #fff; transition: all 0.15s; font-family: inherit; width: 100%; }
   .btn-primary { background: var(--ink); color: #fff; border-color: var(--ink); }
   .btn-gold { background: var(--gold); color: #fff; border-color: var(--gold); }
   .btn-outline-white { background: transparent; color: #fff; border-color: rgba(255,255,255,0.3); font-size: 11px; padding: 6px 12px; }
-  .btn-full { width: 100%; margin-bottom: 10px; }
   .form-group { margin-bottom: 15px; }
   .form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 5px; }
   .form-input { width: 100%; padding: 11px; border-radius: 10px; border: 1.5px solid var(--border-strong); font-family: inherit; }
+  .offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: var(--gold-light); color: var(--gold); flex-shrink: 0; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 20px; border-radius: 20px; transition: 0.3s; z-index: 1000; }
   .toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
+
 <div class="app">
   <div class="header">
     <div class="header-pre">Acto de graduación</div>
@@ -53,48 +51,35 @@
 
   <div id="s-login" class="screen active">
     <div class="card" style="max-width:400px;margin:0 auto">
-      <p style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:4px">Iniciar Sesión</p>
-      <p style="font-size:13px;color:var(--ink-muted);margin-bottom:20px">Accede a tu cuenta</p>
+      <p style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:15px">Iniciar Sesión</p>
       <div class="form-group">
         <label class="form-label">Correo electrónico</label>
-        <input class="form-input" id="l-email" type="email" placeholder="tu@correo.com" />
+        <input class="form-input" id="l-email" type="email" placeholder="tu@correo.com">
       </div>
-      <div id="l-error" style="color:var(--red);font-size:12px;margin-bottom:12px;display:none"></div>
-      <button class="btn btn-primary btn-full" onclick="doLogin()">Entrar →</button>
+      <button class="btn btn-primary" onclick="doLogin()">Entrar →</button>
       <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
-      <button class="btn btn-full" onclick="goTo('s-register')">Registrar nuevo usuario</button>
+      <button class="btn" onclick="goTo('s-register')">Registrar nuevo usuario</button>
     </div>
   </div>
 
   <div id="s-register" class="screen">
     <div class="card" style="max-width:400px;margin:0 auto">
-      <p style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:4px">Crear Usuario</p>
-      <div class="form-group">
-        <label class="form-label">Nombre y Apellidos</label>
-        <input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García López" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Correo electrónico</label>
-        <input class="form-input" id="r-email" type="email" placeholder="ana@correo.com" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Número total de invitados</label>
-        <input class="form-input" id="r-total" type="number" min="1" value="4" />
-      </div>
-      <div id="r-error" style="color:var(--red);font-size:12px;margin-bottom:12px;display:none"></div>
-      <button class="btn btn-gold btn-full" onclick="doRegister()">Registrar y volver</button>
-      <button class="btn btn-full" onclick="goTo('s-login')">Cancelar</button>
+      <p style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:15px">Crear Usuario</p>
+      <div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Ej. Ana López"></div>
+      <div class="form-group"><label class="form-label">Correo electrónico</label><input class="form-input" id="r-email" type="email" placeholder="ana@correo.com"></div>
+      <div class="form-group"><label class="form-label">Invitados totales</label><input class="form-input" id="r-total" type="number" min="1" value="4"></div>
+      <button class="btn btn-gold" onclick="doRegister()">Registrar Usuario</button>
+      <button class="btn" onclick="goTo('s-login')" style="margin-top:10px">Volver al inicio</button>
     </div>
   </div>
 
   <div id="s-setup" class="screen">
-    <p style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px">Ajustar Asientos</p>
+    <p style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:10px">Ajustar Asientos</p>
     <div class="card">
-      <p style="font-weight:600;margin-bottom:10px">¿Cuántos invitados se sentarán en PRIMERA FILA?</p>
-      <p style="font-size:12px; color:var(--ink-muted); margin-bottom:15px;">Recuerda: Tienes un máximo de 4 huecos delante.</p>
+      <p style="font-weight:600;margin-bottom:10px">¿Cuántos en PRIMERA FILA?</p>
       <input type="range" min="0" max="4" value="4" id="setup-slider" style="width:100%; accent-color:var(--gold);" oninput="updateSetupPreview()" />
       <div style="text-align:center; font-size:40px; font-weight:bold; color:var(--gold); margin:10px 0;" id="setup-front-val">4</div>
-      <button class="btn btn-gold btn-full" onclick="confirmSetup()">Guardar Cambios →</button>
+      <button class="btn btn-gold" onclick="confirmSetup()">Guardar Cambios →</button>
     </div>
   </div>
 
@@ -102,26 +87,16 @@
     <div class="my-card">
       <div class="name-row" id="mc-name">—</div>
       <div class="stats-grid">
-        <div class="stat-item">
-          <div class="label">Invitados</div>
-          <div class="value" id="mc-total">0</div>
-        </div>
-        <div class="stat-item">
-          <div class="label">En 1ª Fila</div>
-          <div class="value" id="mc-front">0</div>
-        </div>
-        <div class="stat-item">
-          <div class="label">Fila Atrás</div>
-          <div class="value" id="mc-back">0</div>
-        </div>
+        <div class="stat-item"><div class="label">Invitados</div><div class="value" id="mc-total">0</div></div>
+        <div class="stat-item"><div class="label">1ª Fila</div><div class="value" id="mc-front">0</div></div>
+        <div class="stat-item"><div class="label">Atrás</div><div class="value" id="mc-back">0</div></div>
       </div>
       <div style="display:flex; gap:10px;">
-        <button class="btn btn-outline-white" onclick="openSetup()">✎ Editar Asientos</button>
+        <button class="btn btn-outline-white" onclick="goTo('s-setup')">✎ Editar</button>
         <button class="btn btn-outline-white" style="color:var(--red-light); border-color:var(--red-light);" onclick="logout()">✕ Salir</button>
       </div>
     </div>
-
-    <p style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-muted); margin:25px 0 10px;">Intercambios Disponibles</p>
+    <p style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-muted); margin:25px 0 10px;">Otros alumnos en tiempo real</p>
     <div id="tab-offers"></div>
   </div>
 </div>
@@ -129,137 +104,108 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// "BASE DE DATOS" TOTALMENTE VACÍA AL INICIO
-let ALUMNOS = []; 
-let currentUser = null;
+  // TU URL DE FIREBASE YA CONFIGURADA
+  const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com/alumnos";
 
-function goTo(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.getElementById('l-error').style.display = 'none';
-  document.getElementById('r-error').style.display = 'none';
-}
+  let currentUser = null;
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-function doRegister() {
-  const name = document.getElementById('r-name').value.trim();
-  const email = document.getElementById('r-email').value.trim().toLowerCase();
-  const totalInv = parseInt(document.getElementById('r-total').value);
-  const err = document.getElementById('r-error');
-
-  if(!name || !email || isNaN(totalInv)) {
-    err.textContent = "Completa todos los datos correctamente.";
-    err.style.display = "block";
-    return;
-  }
-  if(ALUMNOS.find(a => a.email === email)) {
-    err.textContent = "Este correo ya está en uso.";
-    err.style.display = "block";
-    return;
+  function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(id === 's-main') renderMain();
   }
 
-  ALUMNOS.push({
-    id: Date.now(),
-    nombre: name,
-    email: email,
-    invitadosTotales: totalInv,
-    front: 4 > totalInv ? totalInv : 4, // No puede sentar delante a más de los que trae
-    configured: false
-  });
-
-  showToast("¡Registrado! Ahora inicia sesión.");
-  document.getElementById('r-name').value = '';
-  document.getElementById('r-email').value = '';
-  goTo('s-login');
-}
-
-function doLogin() {
-  const email = document.getElementById('l-email').value.trim().toLowerCase();
-  const err = document.getElementById('l-error');
-  const alumno = ALUMNOS.find(a => a.email === email);
-
-  if(!alumno) {
-    err.textContent = "Correo no registrado.";
-    err.style.display = "block";
-    return;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  currentUser = alumno;
-  if(!alumno.configured) goTo('s-setup');
-  else { renderMain(); goTo('s-main'); }
-}
+  // REGISTRO
+  async function doRegister() {
+    const name = document.getElementById('r-name').value.trim();
+    const email = document.getElementById('r-email').value.trim().toLowerCase().replace(/\./g, '_');
+    const total = parseInt(document.getElementById('r-total').value);
 
-function openSetup() {
-  document.getElementById('setup-slider').max = 4;
-  document.getElementById('setup-slider').value = currentUser.front;
-  updateSetupPreview();
-  goTo('s-setup');
-}
+    if(!name || !email || isNaN(total)) return alert("Completa todos los campos");
 
-function updateSetupPreview() {
-  document.getElementById('setup-front-val').textContent = document.getElementById('setup-slider').value;
-}
+    // Verificar si existe
+    const res = await fetch(`${BASE_URL}/${email}.json`);
+    const exist = await res.json();
+    if(exist) return alert("Ese correo ya está registrado");
 
-function confirmSetup() {
-  const val = parseInt(document.getElementById('setup-slider').value);
-  // Validación: No puedes sentar delante a más personas de las que traes en total
-  if (val > currentUser.invitadosTotales) {
-    showToast("No puedes asignar más asientos que invitados totales.");
-    return;
-  }
-  
-  currentUser.front = val;
-  currentUser.configured = true;
-  showToast("Configuración actualizada.");
-  renderMain();
-  goTo('s-main');
-}
+    const nuevo = { nombre: name, email: email, invitadosTotales: total, front: (total < 4 ? total : 4), configured: false };
+    
+    await fetch(`${BASE_URL}/${email}.json`, {
+      method: 'PUT',
+      body: JSON.stringify(nuevo)
+    });
 
-function logout() {
-  currentUser = null;
-  document.getElementById('l-email').value = '';
-  goTo('s-login');
-}
-
-function renderMain() {
-  document.getElementById('mc-name').textContent = currentUser.nombre;
-  document.getElementById('mc-total').textContent = currentUser.invitadosTotales;
-  document.getElementById('mc-front').textContent = currentUser.front;
-  // Cálculo de invitados atrás
-  document.getElementById('mc-back').textContent = currentUser.invitadosTotales - currentUser.front;
-
-  const container = document.getElementById('tab-offers');
-  container.innerHTML = '';
-  
-  // Filtrar otros alumnos que regalan huecos
-  const otros = ALUMNOS.filter(a => a.id !== currentUser.id && (4 - a.front) > 0);
-
-  if(otros.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:40px; color:gray; font-size:13px;">Nadie ofrece huecos libres por ahora.</div>';
-    return;
+    showToast("¡Registrado! Ya puedes entrar.");
+    goTo('s-login');
   }
 
-  otros.forEach(a => {
-    const card = document.createElement('div');
-    card.className = 'offer-card';
-    card.innerHTML = `
-      <div class="offer-row">
-        <div class="avatar" style="background:var(--gold-light); color:var(--gold)">${a.nombre.charAt(0)}</div>
-        <div style="flex:1">
-          <div style="font-weight:600">${a.nombre}</div>
-          <div style="font-size:12px; color:gray">Ofrece ${4 - a.front} huecos en 1ª fila</div>
-        </div>
-        <button class="btn btn-sm btn-gold" onclick="showToast('Solicitud enviada a ${a.nombre.split(' ')[0]}')">Solicitar</button>
-      </div>
-    `;
-    container.appendChild(card);
-  });
-}
+  // LOGIN
+  async function doLogin() {
+    const email = document.getElementById('l-email').value.trim().toLowerCase().replace(/\./g, '_');
+    const res = await fetch(`${BASE_URL}/${email}.json`);
+    const user = await res.json();
+
+    if(!user) return alert("Correo no encontrado");
+    
+    currentUser = user;
+    if(!user.configured) goTo('s-setup');
+    else goTo('s-main');
+  }
+
+  // GUARDAR CONFIGURACIÓN
+  async function confirmSetup() {
+    const val = parseInt(document.getElementById('setup-slider').value);
+    if(val > currentUser.invitadosTotales) return alert("No tienes tantos invitados");
+
+    currentUser.front = val;
+    currentUser.configured = true;
+
+    await fetch(`${BASE_URL}/${currentUser.email}.json`, {
+      method: 'PATCH',
+      body: JSON.stringify({ front: val, configured: true })
+    });
+
+    showToast("Configuración guardada");
+    goTo('s-main');
+  }
+
+  function updateSetupPreview() {
+    document.getElementById('setup-front-val').textContent = document.getElementById('setup-slider').value;
+  }
+
+  // MOSTRAR LISTA DE COMPAÑEROS
+  async function renderMain() {
+    document.getElementById('mc-name').textContent = currentUser.nombre;
+    document.getElementById('mc-total').textContent = currentUser.invitadosTotales;
+    document.getElementById('mc-front').textContent = currentUser.front;
+    document.getElementById('mc-back').textContent = currentUser.invitadosTotales - currentUser.front;
+
+    const res = await fetch(`${BASE_URL}.json`);
+    const todos = await res.json() || {};
+    const container = document.getElementById('tab-offers');
+    container.innerHTML = "";
+
+    Object.values(todos).forEach(a => {
+      if(a.email !== currentUser.email && (4 - a.front) > 0) {
+        const card = document.createElement('div');
+        card.className = "offer-card";
+        card.innerHTML = `
+          <div class="avatar">${a.nombre[0]}</div>
+          <div style="flex:1"><b>${a.nombre}</b><br><small>Libres: ${4 - a.front}</small></div>
+          <button class="btn btn-gold" style="width:auto; padding:6px 12px" onclick="showToast('Solicitud enviada')">Pedir</button>
+        `;
+        container.appendChild(card);
+      }
+    });
+  }
+
+  function logout() { currentUser = null; goTo('s-login'); }
 </script>
 </body>
 </html>
