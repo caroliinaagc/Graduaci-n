@@ -267,13 +267,21 @@
         return;
     }
 
+    // Obtener mis solicitudes enviadas para filtrar la lista
+    const rs = await fetch(`${BASE_URL}/solicitudes/${currentUser.email}.json`);
+    const misSols = await rs.json() || {};
+    const emailsPendientes = Object.values(misSols)
+        .filter(s => s.desdeEmail === currentUser.email && s.status === 'pending')
+        .map(s => s.targetEmail);
+
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     container.innerHTML = "<h4 style='font-size:11px; color:gray; margin-top:20px; margin-bottom:10px; text-transform: uppercase;'>Compañeros con huecos</h4>";
     
     Object.values(todos).forEach(a => {
       const libres = a.capacidad - a.front;
-      if(a.email !== currentUser.email && libres > 0) {
+      // Filtrar: No soy yo, tiene libres y NO tengo una solicitud pendiente con él
+      if(a.email !== currentUser.email && libres > 0 && !emailsPendientes.includes(a.email)) {
         const div = document.createElement('div');
         div.className="offer-card";
         div.innerHTML = `<div><b>${a.nombre}</b><br><small style="color:gray">${libres} libres</small></div><button class="btn btn-gold" style="width:auto; padding:6px 15px;" onclick="enviarSolicitud('${a.email}', '${a.nombre}', ${libres})">Pedir</button>`;
@@ -288,14 +296,13 @@
     const n = parseInt(prompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo: ${maxPermitido})`, "1"));
     if(n > 0 && n <= maxPermitido) {
         const solId = "sol_" + Date.now();
-        const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: n, id: solId, status: 'pending', paraNombre: targetNombre };
+        const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: n, id: solId, status: 'pending', paraNombre: targetNombre, targetEmail: targetEmail };
         
-        // Guardar en el buzón del otro (para que el otro acepte/rechace)
         await fetch(`${BASE_URL}/solicitudes/${targetEmail}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
-        // Guardar en MI buzón (para yo ver que está esperando)
         await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${solId}.json`, { method: 'PUT', body: JSON.stringify(sol) });
         
         showToast("Solicitud enviada");
+        renderMain(); // Refrescar para que desaparezca el alumno de la lista
     } else if (!isNaN(n)) alert("Cantidad no válida");
   }
 
@@ -317,7 +324,7 @@
     list.innerHTML = "";
     
     if(!data || Object.keys(data).length === 0) { 
-        list.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>No hay solicitudes pendientes.</p>"; 
+        list.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>No tienes solicitudes pendientes.</p>"; 
         return; 
     }
 
@@ -325,26 +332,25 @@
       const s = data[id];
       const d = document.createElement('div'); d.className = "card";
       
-      // CASO 1: Es una solicitud que YO recibo de otro
       if (s.desdeEmail !== currentUser.email) {
+          // Recibida
           d.innerHTML = `<p style='margin-bottom:12px; font-size:14px;'><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
             <div style="display:flex; gap:8px;">
               <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'aceptar')">Aceptar</button>
               <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeEmail}', null, 'rechazar')">Rechazar</button>
             </div>`;
       } 
-      // CASO 2: Es una solicitud que YO envié y está en espera
       else if (s.status === 'pending') {
+          // Enviada esperando
           d.innerHTML = `<p style='font-size:14px; color:gray; text-align:center;'>Esperando que <b>${s.paraNombre}</b> apruebe tu solicitud de ${s.cantidad} hueco(s)...</p>`;
       }
-      // CASO 3: Es una solicitud que YO envié y fue ACEPTADA o RECHAZADA
       else {
+          // Feedback (Aceptada/Rechazada)
           const color = s.status === 'accepted' ? 'var(--green)' : 'var(--red)';
           const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
           d.innerHTML = `<p style='margin-bottom:12px; font-size:14px; text-align:center; color:${color};'><b>${s.paraNombre}</b> ${msg} tu solicitud de ${s.cantidad} hueco(s).</p>
             <button class="btn btn-gold" onclick="limpiarNotif('${id}')">Aceptar</button>`;
       }
-      
       list.appendChild(d);
     });
   }
@@ -354,21 +360,19 @@
       const nCapYo = currentUser.capacidad - cantidad;
       const nFrontYo = Math.min(currentUser.front, nCapYo);
       await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapYo, front: nFrontYo }) });
+      
       const r = await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`);
       const otro = await r.json();
       const nCapOtro = (otro.capacidad || 0) + cantidad;
       const nFrontOtro = (otro.front || 0) + cantidad;
       await fetch(`${BASE_URL}/alumnos/${solicitanteEmail}.json`, { method: 'PATCH', body: JSON.stringify({ capacidad: nCapOtro, front: nFrontOtro }) });
       
-      // Actualizar el estado en el buzón del solicitante
       await fetch(`${BASE_URL}/solicitudes/${solicitanteEmail}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: 'accepted' }) });
       showToast("Intercambio realizado");
     } else {
-      // Actualizar el estado en el buzón del solicitante
       await fetch(`${BASE_URL}/solicitudes/${solicitanteEmail}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: 'rejected' }) });
       showToast("Solicitud rechazada");
     }
-    // Borrar de MI buzón porque ya la gestioné
     await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`, { method: 'DELETE' });
     openNotifs();
   }
