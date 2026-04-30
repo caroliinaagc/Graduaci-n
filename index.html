@@ -29,8 +29,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 .stat-val { font-size: 20px; font-weight: 600; margin-top: 5px; }
 
 .slider-box { padding: 10px 0; text-align: center; }
-input[type=range] { -webkit-appearance: none; width: 100%; height: 10px; background: #ddd; border-radius: 50px; outline: none; margin: 25px 0; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; background: var(--gold); cursor: pointer; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 10px; background: #ddd; border-radius: 50px; outline: none; margin: 25px 0; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 30px; height: 30px; background: var(--gold); cursor: pointer; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var(--gold); cursor: pointer; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 .big-num { font-size: 60px; font-weight: bold; color: var(--gold); line-height: 1; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; width: 100%; font-family: inherit; transition: 0.2s; }
@@ -164,16 +165,104 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px;
 
 <div class="toast" id="toast"></div>
 
+<!-- ============================================== -->
+<!-- NUEVOS MODALES PERSONALIZADOS PARA AVISOS/ALERTAS -->
+<!-- ============================================== -->
+
+<!-- MODAL ALERTA (Sustituye a alert) -->
+<div class="modal-overlay" id="modal-alert">
+  <div class="card" style="max-width: 400px; text-align: center; width: 90%;">
+    <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">Aviso</h3>
+    <p id="alert-msg" style="font-size:14px; margin-bottom:20px; white-space:pre-wrap; line-height: 1.4; color: var(--ink);"></p>
+    <button class="btn btn-gold" id="btn-alert-ok">Aceptar</button>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ACCIÓN (Sustituye a confirm) -->
+<div class="modal-overlay" id="modal-confirm-action">
+  <div class="card" style="max-width: 400px; text-align: center; width: 90%;">
+    <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">Confirmación</h3>
+    <p id="confirm-action-msg" style="font-size:14px; margin-bottom:20px; white-space:pre-wrap; line-height: 1.4; color: var(--ink);"></p>
+    <div style="display:flex; gap:10px;">
+      <button class="btn" id="btn-confirm-no" style="flex:1">Cancelar</button>
+      <button class="btn btn-gold" id="btn-confirm-yes" style="flex:1">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROMPT (Sustituye a prompt) -->
+<div class="modal-overlay" id="modal-prompt">
+  <div class="card" style="max-width: 400px; text-align: center; width: 90%;">
+    <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">Acción requerida</h3>
+    <p id="prompt-msg" style="font-size:14px; margin-bottom:15px; color: var(--ink);"></p>
+    <input class="form-input" id="prompt-input" type="text" style="margin-bottom:20px; text-align:center;">
+    <div style="display:flex; gap:10px;">
+      <button class="btn" id="btn-prompt-no" style="flex:1">Cancelar</button>
+      <button class="btn btn-gold" id="btn-prompt-yes" style="flex:1">Continuar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com";
-const ADMIN_PASS = "123456"; // Contraseña de acceso
+const ADMIN_PASS = "123456"; 
 let currentUser = null;
+
+// FUNCIONES PARA CONTROLAR LOS MODALES NUEVOS
+function customAlert(msg) {
+    return new Promise((resolve) => {
+        document.getElementById('alert-msg').innerText = msg;
+        const modal = document.getElementById('modal-alert');
+        modal.classList.add('active');
+        document.getElementById('btn-alert-ok').onclick = () => {
+            modal.classList.remove('active');
+            resolve();
+        };
+    });
+}
+
+function customConfirm(msg) {
+    return new Promise((resolve) => {
+        document.getElementById('confirm-action-msg').innerText = msg;
+        const modal = document.getElementById('modal-confirm-action');
+        modal.classList.add('active');
+        
+        document.getElementById('btn-confirm-yes').onclick = () => {
+            modal.classList.remove('active');
+            resolve(true);
+        };
+        document.getElementById('btn-confirm-no').onclick = () => {
+            modal.classList.remove('active');
+            resolve(false);
+        };
+    });
+}
+
+function customPrompt(msg, defaultValue, type="text") {
+    return new Promise((resolve) => {
+        document.getElementById('prompt-msg').innerText = msg;
+        const input = document.getElementById('prompt-input');
+        input.type = type;
+        input.value = defaultValue;
+        const modal = document.getElementById('modal-prompt');
+        modal.classList.add('active');
+        
+        document.getElementById('btn-prompt-yes').onclick = () => {
+            modal.classList.remove('active');
+            resolve(input.value);
+        };
+        document.getElementById('btn-prompt-no').onclick = () => {
+            modal.classList.remove('active');
+            resolve(null);
+        };
+    });
+}
 
 // RESETEO DE BD (SOLO ADMIN)
 async function resetBaseDeDatos() {
-    if (confirm("¡ATENCIÓN! Esto borrará absolutamente todo. ¿Estás seguro?")) {
+    if (await customConfirm("¡ATENCIÓN! Esto borrará absolutamente todo. ¿Estás seguro?")) {
         await fetch(`${BASE_URL}/.json`, { method: 'DELETE' });
-        alert("Base de datos reseteada.");
+        await customAlert("Base de datos reseteada.");
         location.reload();
     }
 }
@@ -186,23 +275,24 @@ function goTo(id) {
 
 async function doLogin() {
     const idKey = document.getElementById('l-email').value.trim();
-    if(!idKey) return alert("Introduce tu ID");
+    if(!idKey) { await customAlert("Introduce tu ID"); return; }
     
     // CASO ESPECIAL ADMINISTRADOR
     if(idKey === "Administrador") {
-        const pass = prompt("Introduce la contraseña de administrador:");
+        const pass = await customPrompt("Introduce la contraseña de administrador:", "", "password");
+        if(pass === null) return; // Canceló
         if(pass === ADMIN_PASS) {
             currentUser = { email: "Administrador", nombre: "Administrador" };
             goTo('s-admin');
         } else {
-            alert("Contraseña incorrecta.");
+            await customAlert("Contraseña incorrecta.");
         }
         return;
     }
 
     const r = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
     const u = await r.json();
-    if(!u) return alert("Identificador no válido.");
+    if(!u) { await customAlert("Identificador no válido."); return; }
     currentUser = u;
     if(!u.configured) openSetupScreen(true); else goTo('s-main');
 }
@@ -226,11 +316,11 @@ function showToast(m) {
     setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-function showConfirmRegister() {
+async function showConfirmRegister() {
     const name = document.getElementById('r-name').value.trim();
     const id = document.getElementById('r-email').value.trim();
     const total = document.getElementById('r-total').value;
-    if(!name || !id || !total) return alert("Completa todos los campos.");
+    if(!name || !id || !total) { await customAlert("Completa todos los campos."); return; }
     document.getElementById('conf-name').innerText = name;
     document.getElementById('conf-email').innerText = id;
     document.getElementById('conf-total').innerText = total;
@@ -242,13 +332,14 @@ async function doRegister() {
     const name = document.getElementById('r-name').value.trim();
     const total = parseInt(document.getElementById('r-total').value);
 
-    if(idKey.toLowerCase() === "administrador") return alert("ID reservado.");
+    if(idKey.toLowerCase() === "administrador") { await customAlert("ID reservado."); return; }
 
     const rCheck = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
     const exists = await rCheck.json();
     if(exists) {
         document.getElementById('modal-confirm').classList.remove('active');
-        return alert("El ID ya existe.");
+        await customAlert("El ID ya existe.");
+        return;
     }
 
     const nuevo = { nombre: name, email: idKey, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
@@ -335,7 +426,11 @@ async function renderMain() {
 async function enviarSolicitud(targetEmail, targetNombre, maxDelOtro) {
     const necesito = currentUser.invitadosTotales - currentUser.front;
     const maxPermitido = Math.min(maxDelOtro, necesito);
-    const n = parseInt(prompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo: ${maxPermitido})`, "1"));
+    
+    const rawVal = await customPrompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo: ${maxPermitido})`, "1", "number");
+    if(rawVal === null) return; // Si pulsa cancelar
+    
+    const n = parseInt(rawVal);
     if(n > 0 && n <= maxPermitido) {
         const solId = "sol_" + Date.now();
         const sol = { desde: currentUser.nombre, desdeEmail: currentUser.email, cantidad: n, id: solId, status: 'pending', paraNombre: targetNombre, targetEmail: targetEmail, unread: true };
@@ -367,23 +462,18 @@ async function openNotifs() {
         d.className = "card notif-card";
         
         if (s.desdeEmail !== currentUser.email) {
-            // RECIBIDA: El usuario actual debe aceptar o rechazar
             d.innerHTML = `<p><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
             <div style="display:flex; gap:8px; margin-top:10px">
               <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'accepted', '${s.desde}')">Aceptar</button>
               <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'rejected', '${s.desde}')">Rechazar</button>
             </div>`;
         } else if (s.status === 'pending') {
-            // ENVIADA (PENDIENTE): El usuario actual espera a que el otro conteste
             d.classList.add(s.unread ? 'notif-pending-unread' : 'notif-pending-read');
             d.innerHTML = `<p style="text-align:center">Esperando que <b>${s.paraNombre}</b> acepte tu solicitud de ${s.cantidad} hueco(s)...</p>`;
             if (s.unread) {
-                // Solo sale el botón si la notificación es "nueva" (no leída)
                 d.innerHTML += `<button class="btn" style="margin-top:10px" onclick="marcarLeido('${id}')">Marcar como leído</button>`;
             }
-            // Si ya se ha leído, la tarjeta se queda ahí en gris, pero sin botón
         } else {
-            // FEEDBACK: La solicitud ya fue resuelta
             const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
             const color = s.status === 'accepted' ? 'var(--green)' : 'var(--red)';
             let extraInfo = s.msgExtra ? `<br><span style="font-size:12px; color:gray;">${s.msgExtra}</span>` : "";
@@ -394,7 +484,6 @@ async function openNotifs() {
     });
 }
 
-// LÓGICA INTEGRADA EXACTAMENTE COMO EN EL DIAGRAMA DE FLUJO
 async function gestionarSol(id, solEmail, cant, status, solNombre) {
     if (status === 'rejected') {
         return rechazarSolicitud(id, solEmail, cant, "");
@@ -420,14 +509,14 @@ async function gestionarSol(id, solEmail, cant, status, solNombre) {
         } else {
             // ¿El solicitante puede aceptar algún hueco?
             if (faltanSolicitante > 0) {
-                if (confirm(`Aviso: No puede realizarse la operación porque el alumno solicitante superaría su cupo.\n\nActualmente puedes traspasar ${faltanSolicitante} huecos, ¿deseas continuar?`)) {
+                if (await customConfirm(`Aviso: No puede realizarse la operación porque el alumno solicitante superaría su cupo.\n\nActualmente puedes traspasar ${faltanSolicitante} huecos, ¿deseas continuar?`)) {
                     traspasoReal = faltanSolicitante;
                     msgExtra = `(Operación incompleta: el alumno sólo ha podido traspasar ${faltanSolicitante} huecos).`;
                 } else {
                     return rechazarSolicitud(id, solEmail, cant, "");
                 }
             } else {
-                alert("Aviso: No puede realizarse la operación porque el alumno tiene su cupo completo.");
+                await customAlert("Aviso: No puede realizarse la operación porque el alumno tiene su cupo completo.");
                 return rechazarSolicitud(id, solEmail, cant, "(Motivo: el alumno ya tiene su cupo completo)");
             }
         }
@@ -436,18 +525,18 @@ async function gestionarSol(id, solEmail, cant, status, solNombre) {
         if (misHuecosLibres > 0) {
             // ¿El alumno solicitante puede aceptar esos huecos sin llenar su cupo?
             if (misHuecosLibres <= faltanSolicitante) {
-                if (confirm(`Aviso: La operación no puede realizarse porque no tienes los huecos solicitados.\n\nActualmente puedes traspasar ${misHuecosLibres} huecos, ¿deseas continuar?`)) {
+                if (await customConfirm(`Aviso: La operación no puede realizarse porque no tienes los huecos solicitados.\n\nActualmente puedes traspasar ${misHuecosLibres} huecos, ¿deseas continuar?`)) {
                     traspasoReal = misHuecosLibres;
                     msgExtra = `(Operación incompleta: el alumno sólo ha podido traspasar ${misHuecosLibres} huecos).`;
                 } else {
                     return rechazarSolicitud(id, solEmail, cant, "");
                 }
             } else {
-                alert("Aviso: La operación no puede realizarse porque no tienes los huecos solicitados.");
+                await customAlert("Aviso: La operación no puede realizarse porque no tienes los huecos solicitados.");
                 return rechazarSolicitud(id, solEmail, cant, "(Motivo: la operación no pudo completarse)");
             }
         } else {
-            alert("Aviso: La operación no puede realizarse porque no tienes los huecos solicitados.");
+            await customAlert("Aviso: La operación no puede realizarse porque no tienes los huecos solicitados.");
             return rechazarSolicitud(id, solEmail, cant, "(Motivo: el compañero ya no tiene los huecos solicitados)");
         }
     }
@@ -496,7 +585,10 @@ function logout() {
 }
 
 async function deleteAccount() {
-    if(confirm("¿Borrar cuenta?")) { await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'DELETE' }); logout(); }
+    if(await customConfirm("¿Borrar cuenta?")) { 
+        await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { method: 'DELETE' }); 
+        logout(); 
+    }
 }
 </script>
 </body>
