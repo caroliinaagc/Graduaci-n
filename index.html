@@ -41,6 +41,9 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
 .success-box { background: #f0fdf4; border: 1px solid #dcfce7; color: var(--green); padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
 .info-box { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; padding: 20px; border-radius: 14px; text-align: center; margin-top: 20px; }
 
+/* ESTILOS DE LA LISTA DE COMPAÑEROS */
+.offer-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
 .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--ink); color: #fff; padding: 10px 22px; border-radius: 30px; transition: 0.3s; z-index: 6000; font-size: 13px; }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
@@ -166,10 +169,9 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
 <div class="toast" id="toast"></div>
 
 <!-- ============================================== -->
-<!-- NUEVOS MODALES PERSONALIZADOS PARA AVISOS/ALERTAS -->
+<!-- MODALES PERSONALIZADOS -->
 <!-- ============================================== -->
 
-<!-- MODAL ALERTA (Sustituye a alert) -->
 <div class="modal-overlay" id="modal-alert">
   <div class="card" style="max-width: 400px; text-align: center; width: 90%;">
     <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">Aviso</h3>
@@ -178,7 +180,6 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
   </div>
 </div>
 
-<!-- MODAL CONFIRMAR ACCIÓN (Sustituye a confirm) -->
 <div class="modal-overlay" id="modal-confirm-action">
   <div class="card" style="max-width: 400px; text-align: center; width: 90%;">
     <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">Confirmación</h3>
@@ -190,7 +191,6 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
   </div>
 </div>
 
-<!-- MODAL PROMPT (Sustituye a prompt) -->
 <div class="modal-overlay" id="modal-prompt">
   <div class="card" style="max-width: 400px; text-align: center; width: 90%;">
     <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">Acción requerida</h3>
@@ -280,7 +280,7 @@ async function doLogin() {
     // CASO ESPECIAL ADMINISTRADOR
     if(idKey === "Administrador") {
         const pass = await customPrompt("Introduce la contraseña de administrador:", "", "password");
-        if(pass === null) return; // Canceló
+        if(pass === null) return; 
         if(pass === ADMIN_PASS) {
             currentUser = { email: "Administrador", nombre: "Administrador" };
             goTo('s-admin');
@@ -428,7 +428,7 @@ async function enviarSolicitud(targetEmail, targetNombre, maxDelOtro) {
     const maxPermitido = Math.min(maxDelOtro, necesito);
     
     const rawVal = await customPrompt(`¿Cuántos huecos pides a ${targetNombre}? (Máximo: ${maxPermitido})`, "1", "number");
-    if(rawVal === null) return; // Si pulsa cancelar
+    if(rawVal === null) return; 
     
     const n = parseInt(rawVal);
     if(n > 0 && n <= maxPermitido) {
@@ -501,13 +501,10 @@ async function gestionarSol(id, solEmail, cant, status, solNombre) {
     let traspasoReal = 0;
     let msgExtra = "";
 
-    // ¿El alumno actual tiene los huecos solicitados?
     if (misHuecosLibres >= huecosSolicitados) {
-        // ¿Y el alumno solicitante puede aceptar esos huecos sin llenar su cupo?
         if (huecosSolicitados <= faltanSolicitante) {
             traspasoReal = huecosSolicitados;
         } else {
-            // ¿El solicitante puede aceptar algún hueco?
             if (faltanSolicitante > 0) {
                 if (await customConfirm(`Aviso: No puede realizarse la operación porque el alumno solicitante superaría su cupo.\n\nActualmente puedes traspasar ${faltanSolicitante} huecos, ¿deseas continuar?`)) {
                     traspasoReal = faltanSolicitante;
@@ -521,9 +518,7 @@ async function gestionarSol(id, solEmail, cant, status, solNombre) {
             }
         }
     } else {
-        // ¿El alumno actual tiene algún hueco libre disponible?
         if (misHuecosLibres > 0) {
-            // ¿El alumno solicitante puede aceptar esos huecos sin llenar su cupo?
             if (misHuecosLibres <= faltanSolicitante) {
                 if (await customConfirm(`Aviso: La operación no puede realizarse porque no tienes los huecos solicitados.\n\nActualmente puedes traspasar ${misHuecosLibres} huecos, ¿deseas continuar?`)) {
                     traspasoReal = misHuecosLibres;
@@ -541,7 +536,6 @@ async function gestionarSol(id, solEmail, cant, status, solNombre) {
         }
     }
 
-    // REALIZAR TRASPASO
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, { 
         method: 'PATCH', 
         body: JSON.stringify({ capacidad: me.capacidad - traspasoReal, front: Math.min(me.front, me.capacidad - traspasoReal) }) 
@@ -551,7 +545,6 @@ async function gestionarSol(id, solEmail, cant, status, solNombre) {
         body: JSON.stringify({ capacidad: ot.capacidad + traspasoReal, front: ot.front + traspasoReal }) 
     });
     
-    // MANDAR EL FEEDBACK AL SOLICITANTE
     await fetch(`${BASE_URL}/solicitudes/${solEmail}/${id}.json`, { 
         method: 'PATCH', 
         body: JSON.stringify({ status: 'accepted', unread: true, paraNombre: currentUser.nombre, cantidad: traspasoReal, msgExtra: msgExtra }) 
