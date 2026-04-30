@@ -45,6 +45,11 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px;
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
 .modal-overlay.active { display: flex; }
+
+/* ESTILOS NOTIFICACIONES */
+.notif-card { transition: 0.3s; }
+.notif-pending-unread { background: #fff; border: 2px solid var(--blue); }
+.notif-pending-read { background: #f1f5f9; border: 1px solid var(--border); opacity: 0.8; }
 </style>
 </head>
 <body>
@@ -306,24 +311,13 @@ async function renderMain() {
     const misSols = await rs.json() || {};
     const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
-    if (currentUser.front >= currentUser.invitadosTotales) 
-    {
-      container.innerHTML = `
-      <div class="success-box">
-      <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-      <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-      </div>`;
-      return;
+    if (currentUser.front >= currentUser.invitadosTotales) {
+        container.innerHTML = `<div class="success-box">🎉 <b>Cupo completo</b></div>`;
+        return;
     }
-
-    if (libresMios > 0) 
-    {
-      container.innerHTML = `
-      <div class="info-box">
-      <p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
-      <p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
-      </div>`;
-      return;
+    if (libresMios > 0) {
+        container.innerHTML = `<div class="info-box">📍 <b>Tienes ${libresMios} asientos libres.</b></div>`;
+        return;
     }
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
@@ -369,17 +363,26 @@ async function openNotifs() {
 
     Object.keys(data).forEach(id => {
         const s = data[id];
-        const d = document.createElement('div'); d.className = "card";
+        const d = document.createElement('div'); 
+        d.className = "card notif-card";
+        
         if (s.desdeEmail !== currentUser.email) {
-            d.innerHTML = `<p><b>${s.desde}</b> pide ${s.cantidad} hueco(s).</p>
+            d.innerHTML = `<p><b>${s.desde}</b> solicita ${s.cantidad} hueco(s).</p>
             <div style="display:flex; gap:8px; margin-top:10px">
               <button class="btn btn-gold" style="flex:1" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'accepted')">Aceptar</button>
-              <button class="btn" style="flex:1;" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'rejected')">Rechazar</button>
+              <button class="btn" style="flex:1; color:var(--red)" onclick="gestionarSol('${id}', '${s.desdeEmail}', ${s.cantidad}, 'rejected')">Rechazar</button>
             </div>`;
+        } else if (s.status === 'pending') {
+            d.classList.add(s.unread ? 'notif-pending-unread' : 'notif-pending-read');
+            d.innerHTML = `<p style="text-align:center">Esperando que <b>${s.paraNombre}</b> acepte tu solicitud de ${s.cantidad} hueco(s)...</p>`;
+            if (s.unread) {
+                d.innerHTML += `<button class="btn" style="margin-top:10px" onclick="marcarLeido('${id}')">Marcar como leído</button>`;
+            }
         } else {
-            const msg = s.status === 'pending' ? 'Pendiente' : (s.status === 'accepted' ? 'Aceptado' : 'Rechazado');
-            d.innerHTML = `<p>Solicitud a <b>${s.paraNombre}</b>: ${msg}</p>
-            <button class="btn btn-gold" style="margin-top:10px" onclick="borrarSol('${id}')">Cerrar</button>`;
+            const msg = s.status === 'accepted' ? 'ha ACEPTADO' : 'ha RECHAZADO';
+            const color = s.status === 'accepted' ? 'var(--green)' : 'var(--red)';
+            d.innerHTML = `<p style="text-align:center; color:${color}; font-weight:600;"><b>${s.paraNombre}</b> ${msg} tu solicitud.</p>
+            <button class="btn btn-gold" style="margin-top:10px" onclick="borrarSol('${id}')">Aceptar</button>`;
         }
         list.appendChild(d);
     });
@@ -396,6 +399,12 @@ async function gestionarSol(id, solEmail, cant, status) {
     }
     await fetch(`${BASE_URL}/solicitudes/${solEmail}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ status: status, unread: true }) });
     await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`, { method: 'DELETE' });
+    openNotifs();
+}
+
+async function marcarLeido(id) {
+    await fetch(`${BASE_URL}/solicitudes/${currentUser.email}/${id}.json`, { method: 'PATCH', body: JSON.stringify({ unread: false }) });
+    checkNotifs();
     openNotifs();
 }
 
