@@ -20,7 +20,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 
 .my-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 22px; margin-bottom: 16px; position: relative; }
 .name-row { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
-.mail-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
+.mail-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; transition: 0.2s; }
 .mail-btn svg { width: 22px; height: 22px; fill: white; }
 .notif-dot { position: absolute; top: 0px; right: 0px; background: var(--orange); width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--ink); display: none; }
 
@@ -139,10 +139,16 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
     <div class="my-card">
       <div class="name-row">
         <span id="mc-name">...</span>
-        <button class="mail-btn" onclick="openNotifs()">
-          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-          <div id="mail-notif" class="notif-dot"></div>
-        </button>
+        <!-- BOTONES DE REFRESCAR Y NOTIFICACIONES -->
+        <div style="display:flex; gap:10px;">
+          <button class="mail-btn" onclick="refreshMain(this)">
+            <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+          </button>
+          <button class="mail-btn" onclick="openNotifs()">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            <div id="mail-notif" class="notif-dot"></div>
+          </button>
+        </div>
       </div>
       <div class="stats-grid">
         <div class="stat-item"><div class="stat-label">Invitados<br>totales</div><div class="stat-val" id="mc-total">0</div></div>
@@ -207,6 +213,25 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
 const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com";
 const ADMIN_PASS = "123456"; 
 let currentUser = null;
+
+// ==============================================
+// SISTEMA DE REFRESCO ("ESTILO GMAIL")
+// ==============================================
+async function refreshMain(btnElement) {
+    if(btnElement) btnElement.style.opacity = "0.5";
+    await renderMain();
+    await checkNotifs();
+    if(btnElement) btnElement.style.opacity = "1";
+    showToast("Datos actualizados");
+}
+
+// Bucle en segundo plano: Cada 10 segundos actualiza la notificación (el punto rojo)
+setInterval(() => {
+    if (currentUser) {
+        checkNotifs();
+    }
+}, 10000); 
+// ==============================================
 
 // FUNCIONES PARA CONTROLAR LOS MODALES NUEVOS
 function customAlert(msg) {
@@ -402,7 +427,7 @@ async function renderMain() {
     const misSols = await rs.json() || {};
     const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
-   if (currentUser.front >= currentUser.invitadosTotales) {
+    if (currentUser.front >= currentUser.invitadosTotales) {
 container.innerHTML = `
 <div class="success-box">
 <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
@@ -420,6 +445,8 @@ container.innerHTML = `
 </div>`;
 return;
 }
+
+  
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     Object.values(todos).forEach(a => {
