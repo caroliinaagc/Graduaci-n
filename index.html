@@ -306,23 +306,25 @@ async function renderMain() {
     const misSols = await rs.json() || {};
     const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
-    if (currentUser.front >= currentUser.invitadosTotales) {
-container.innerHTML = `
-<div class="success-box">
-<p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-<p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-</div>`;
-return;
-}
+    if (currentUser.front >= currentUser.invitadosTotales) 
+    {
+      container.innerHTML = `
+      <div class="success-box">
+      <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
+      <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
+      </div>`;
+      return;
+    }
 
-if (libresMios > 0) {
-container.innerHTML = `
-<div class="info-box">
-<p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
-<p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
-</div>`;
-return;
-}
+    if (libresMios > 0) 
+    {
+      container.innerHTML = `
+      <div class="info-box">
+      <p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
+      <p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
+      </div>`;
+      return;
+    }
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     Object.values(todos).forEach(a => {
