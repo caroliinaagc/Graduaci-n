@@ -74,6 +74,16 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
   <div id="s-admin" class="screen">
     <div class="card" style="text-align: center; max-width: 450px; margin: 20px auto;">
       <h2 style="font-family:'DM Serif Display'; margin-bottom: 25px;">Panel de Administrador</h2>
+      
+      <!-- NUEVO: ZONA DE RESCATE DE DATOS -->
+      <div style="background: #f0fdf4; border: 1px dashed var(--green); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+        <p style="margin-bottom: 15px; font-size: 14px; color: var(--green); font-weight: bold;">Gestión de Datos</p>
+        <button class="btn" style="padding: 15px; background: var(--green); color: white; border: none;" onclick="rescatarDatos()">
+          RESCATAR DATOS (CSV)
+        </button>
+      </div>
+
+      <!-- ZONA DE PELIGRO -->
       <div style="background: #fff5f5; border: 1px dashed var(--red); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
         <p style="margin-bottom: 15px; font-size: 14px; color: var(--red); font-weight: bold;">Zona de Peligro</p>
         <button class="btn btn-red" style="padding: 15px; background: var(--red); color: white;" onclick="resetBaseDeDatos()">
@@ -225,9 +235,8 @@ async function refreshMain(btnElement) {
     showToast("Datos actualizados");
 }
 
-// Bucle en segundo plano: Cada 10 segundos actualiza la notificación (el punto rojo)
 setInterval(() => {
-    if (currentUser) {
+    if (currentUser && currentUser.email !== "Administrador") {
         checkNotifs();
     }
 }, 10000); 
@@ -283,6 +292,52 @@ function customPrompt(msg, defaultValue, type="text") {
     });
 }
 
+// ==============================================
+// FUNCIÓN PARA DESCARGAR DATOS (SOLO ADMIN)
+// ==============================================
+async function rescatarDatos() {
+    try {
+        const r = await fetch(`${BASE_URL}/alumnos.json`);
+        const data = await r.json();
+        
+        if (!data) {
+            await customAlert("No hay datos para descargar.");
+            return;
+        }
+
+        let csvContent = "Nombre de usuario,Invitados totales,Asientos ocupados,Asientos libres\n";
+
+        Object.values(data).forEach(alumno => {
+            // Ignoramos la cuenta del administrador
+            if (alumno.email !== "Administrador" && alumno.email !== "administrador") {
+                const totales = alumno.invitadosTotales || 0;
+                const ocupados = alumno.front || 0;
+                const libres = (alumno.capacidad || 4) - ocupados;
+                
+                // Evitamos problemas si alguien pone una coma en su nombre
+                const nombre = `"${alumno.nombre || ''}"`;
+                
+                csvContent += `${nombre},${totales},${ocupados},${libres}\n`;
+            }
+        });
+
+        // Generamos el archivo descargable con formato compatible para tildes
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "datos_graduacion_2026.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast("Datos exportados correctamente.");
+    } catch (e) {
+        await customAlert("Error al descargar los datos. Inténtalo más tarde.");
+    }
+}
+
 // RESETEO DE BD (SOLO ADMIN)
 async function resetBaseDeDatos() {
     if (await customConfirm("¡ATENCIÓN! Esto borrará absolutamente todo. ¿Estás seguro?")) {
@@ -334,11 +389,6 @@ function goToRegister() {
     document.getElementById('r-email').value = "";
     document.getElementById('r-total').value = 4;
     goTo('s-register');
-}
-
-function showToast(m) {
-    const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 async function showConfirmRegister() {
@@ -427,7 +477,7 @@ async function renderMain() {
     const misSols = await rs.json() || {};
     const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
-    if (currentUser.front >= currentUser.invitadosTotales) {
+if (currentUser.front >= currentUser.invitadosTotales) {
 container.innerHTML = `
 <div class="success-box">
 <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
