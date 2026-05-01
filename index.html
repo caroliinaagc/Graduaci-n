@@ -65,7 +65,17 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
     <div class="card" style="text-align: center; max-width: 450px; margin: 20px auto;">
       <h2 style="font-family:'DM Serif Display'; margin-bottom: 25px;">Panel de Administrador</h2>
       
-      <!-- NUEVO BOTÓN DE RESCATAR DATOS -->
+      <!-- NUEVO: ZONA DE CREAR ALUMNOS AUTORIZADOS -->
+      <div style="background: #eff6ff; border: 1px dashed var(--blue); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+        <p style="margin-bottom: 15px; font-size: 14px; color: var(--blue); font-weight: bold;">Añadir Alumno Autorizado</p>
+        <input class="form-input" id="a-name" type="text" placeholder="Nombre y Apellidos" style="margin-bottom: 10px;">
+        <input class="form-input" id="a-total" type="number" placeholder="Nº Invitados" value="4" style="margin-bottom: 15px;">
+        <button class="btn" style="background: var(--blue); color: white; border: none;" onclick="crearUsuarioAdmin()">
+          Crear Usuario
+        </button>
+      </div>
+
+      <!-- BOTÓN DE RESCATAR DATOS -->
       <div style="background: #f0fdf4; border: 1px dashed var(--green); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
         <p style="margin-bottom: 15px; font-size: 14px; color: var(--green); font-weight: bold;">Gestión de Datos</p>
         <button class="btn" style="padding: 15px; background: var(--green); color: white; border: none;" onclick="rescatarDatos()">
@@ -86,15 +96,15 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
   <div id="s-register" class="screen">
     <div class="card">
       <h3 style="margin-bottom:20px">Registrar Usuario</h3>
-      <div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Ej. Ana García"></div>
+      <div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Tal como te lo dio el Comité"></div>
       <div class="form-group">
-        <label class="form-label">Identificador</label>
+        <label class="form-label">Elige un Identificador (Contraseña)</label>
         <div style="display: flex; gap: 8px;">
-          <input class="form-input" id="r-email" type="text" placeholder="Tu código único">
+          <input class="form-input" id="r-email" type="text" placeholder="Crea tu código único">
           <button class="btn" style="width: auto; padding: 0 15px;" onclick="generateID()">Generar</button>
         </div>
       </div>
-      <div class="form-group"><label class="form-label">Número de invitados</label><input class="form-input" id="r-total" type="number" value="4"></div>
+      <!-- Eliminada la casilla de invitados manual -->
       <button class="btn btn-gold" onclick="showConfirmRegister()">Registrar</button>
       <button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
     </div>
@@ -102,12 +112,15 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
 
   <div class="modal-overlay" id="modal-confirm">
     <div class="card" style="max-width: 400px; text-align: left;">
-      <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">¿Confirmar registro?</h3>
+      <h3 style="margin-bottom:15px; font-family:'DM Serif Display'">¿Son correctos los datos?</h3>
       <p style="font-size:14px; margin-bottom:8px;"><b>Nombre:</b> <span id="conf-name"></span></p>
-      <p style="font-size:14px; margin-bottom:8px;"><b>ID:</b> <span id="conf-email"></span></p>
-      <p style="font-size:14px; margin-bottom:20px;"><b>Invitados:</b> <span id="conf-total"></span></p>
+      <p style="font-size:14px; margin-bottom:8px;"><b>Identificador:</b> <span id="conf-email"></span></p>
+      <p style="font-size:14px; margin-bottom:20px;"><b>Invitados autorizados:</b> <span id="conf-total"></span></p>
+      <div style="background: #f9fafb; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+        <p style="font-size:11px; color: var(--ink); opacity: 0.8; margin: 0;">Si hay algún error en el número de invitaciones, contacte con el Comité de Graduación.</p>
+      </div>
       <div style="display:flex; gap:10px;">
-        <button class="btn" style="flex:1" onclick="document.getElementById('modal-confirm').classList.remove('active')">Editar</button>
+        <button class="btn" style="flex:1" onclick="document.getElementById('modal-confirm').classList.remove('active')">Volver</button>
         <button class="btn btn-gold" style="flex:1" onclick="doRegister()">Confirmar</button>
       </div>
     </div>
@@ -210,6 +223,7 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
 const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com";
 const ADMIN_PASS = "123456"; 
 let currentUser = null;
+let pendingRegisterData = null; // Variable temporal para el registro
 
 // ==============================================
 // SISTEMA DE REFRESCO ("ESTILO GMAIL")
@@ -227,9 +241,10 @@ setInterval(() => {
         checkNotifs();
     }
 }, 10000); 
-// ==============================================
 
+// ==============================================
 // FUNCIONES PARA CONTROLAR LOS MODALES NUEVOS
+// ==============================================
 function customAlert(msg) {
     return new Promise((resolve) => {
         document.getElementById('alert-msg').innerText = msg;
@@ -279,9 +294,33 @@ function customPrompt(msg, defaultValue, type="text") {
     });
 }
 
+// Genera una clave segura para la BD ignorando mayúsculas y tildes
+function getSafeName(name) {
+    return name.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+}
+
 // ==============================================
-// FUNCIÓN PARA DESCARGAR DATOS (SOLO ADMIN)
+// FUNCIONES DEL ADMINISTRADOR
 // ==============================================
+async function crearUsuarioAdmin() {
+    const name = document.getElementById('a-name').value.trim();
+    const total = parseInt(document.getElementById('a-total').value);
+    
+    if(!name || isNaN(total)) {
+        await customAlert("Por favor, completa el nombre y el número de invitados.");
+        return;
+    }
+    
+    const safeKey = getSafeName(name);
+    const data = { nombre: name, invitadosTotales: total, registrado: false };
+    
+    await fetch(`${BASE_URL}/preautorizados/${safeKey}.json`, { method: 'PUT', body: JSON.stringify(data) });
+    
+    document.getElementById('a-name').value = "";
+    document.getElementById('a-total').value = "4";
+    showToast("Alumno autorizado añadido correctamente.");
+}
+
 async function rescatarDatos() {
     try {
         const r = await fetch(`${BASE_URL}/alumnos.json`);
@@ -321,7 +360,6 @@ async function rescatarDatos() {
     }
 }
 
-// RESETEO DE BD (SOLO ADMIN)
 async function resetBaseDeDatos() {
     if (await customConfirm("¡ATENCIÓN! Esto borrará absolutamente todo. ¿Estás seguro?")) {
         await fetch(`${BASE_URL}/.json`, { method: 'DELETE' });
@@ -330,6 +368,9 @@ async function resetBaseDeDatos() {
     }
 }
 
+// ==============================================
+// NAVEGACIÓN Y LOGIN
+// ==============================================
 function goTo(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -340,7 +381,6 @@ async function doLogin() {
     const idKey = document.getElementById('l-email').value.trim();
     if(!idKey) { await customAlert("Introduce tu ID"); return; }
     
-    // CASO ESPECIAL ADMINISTRADOR
     if(idKey === "Administrador") {
         const pass = await customPrompt("Introduce la contraseña de administrador:", "", "password");
         if(pass === null) return; 
@@ -370,7 +410,6 @@ function generateID() {
 function goToRegister() {
     document.getElementById('r-name').value = "";
     document.getElementById('r-email').value = "";
-    document.getElementById('r-total').value = 4;
     goTo('s-register');
 }
 
@@ -379,46 +418,83 @@ function showToast(m) {
     setTimeout(()=>t.classList.remove('show'),3000);
 }
 
+// ==============================================
+// FLUJO DE REGISTRO CON PRE-AUTORIZACIÓN
+// ==============================================
 async function showConfirmRegister() {
     const name = document.getElementById('r-name').value.trim();
-    const id = document.getElementById('r-email').value.trim();
-    const total = document.getElementById('r-total').value;
-    if(!name || !id || !total) { await customAlert("Completa todos los campos."); return; }
-    document.getElementById('conf-name').innerText = name;
-    document.getElementById('conf-email').innerText = id;
-    document.getElementById('conf-total').innerText = total;
+    const idKey = document.getElementById('r-email').value.trim();
+    
+    if(!name || !idKey) { 
+        await customAlert("Completa tu Nombre e Identificador."); 
+        return; 
+    }
+
+    if(idKey.toLowerCase() === "administrador") { 
+        await customAlert("Este Identificador está reservado."); 
+        return; 
+    }
+
+    const safeKey = getSafeName(name);
+
+    // 1. Comprobar pre-autorización
+    const rPre = await fetch(`${BASE_URL}/preautorizados/${safeKey}.json`);
+    const preAuth = await rPre.json();
+
+    if(!preAuth) {
+        await customAlert("Ese usuario no existe. Compruebe que ha escrito bien el nombre de usuario o contacte con el Comité de Graduación.");
+        return;
+    }
+
+    if(preAuth.registrado) {
+        await customAlert("Este alumno ya tiene una cuenta registrada.");
+        return;
+    }
+
+    // 2. Comprobar si el Identificador elegido está en uso
+    const rCheck = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
+    const exists = await rCheck.json();
+    if(exists) {
+        await customAlert("Ese Identificador ya está en uso. Por favor, elige otro distinto o dale al botón Generar.");
+        return;
+    }
+
+    // 3. Mostrar pantalla de confirmación
+    pendingRegisterData = { 
+        name: preAuth.nombre, 
+        idKey: idKey, 
+        total: preAuth.invitadosTotales, 
+        safeKey: safeKey 
+    };
+
+    document.getElementById('conf-name').innerText = preAuth.nombre;
+    document.getElementById('conf-email').innerText = idKey;
+    document.getElementById('conf-total').innerText = preAuth.invitadosTotales;
     document.getElementById('modal-confirm').classList.add('active');
 }
 
 async function doRegister() {
-    const idKey = document.getElementById('r-email').value.trim();
-    const name = document.getElementById('r-name').value.trim();
-    const total = parseInt(document.getElementById('r-total').value);
+    if(!pendingRegisterData) return;
 
-    if(idKey.toLowerCase() === "administrador") { await customAlert("ID reservado."); return; }
-
-    const rCheck = await fetch(`${BASE_URL}/alumnos/${idKey}.json`);
-    const exists = await rCheck.json();
-    if(exists) {
-        document.getElementById('modal-confirm').classList.remove('active');
-        await customAlert("El ID ya existe.");
-        return;
-    }
-
+    const { name, idKey, total, safeKey } = pendingRegisterData;
     const nuevo = { nombre: name, email: idKey, invitadosTotales: total, front: 0, capacidad: 4, configured: false };
-    await fetch(`${BASE_URL}/alumnos/${idKey}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
-    document.getElementById('modal-confirm').classList.remove('active');
     
-    // Vaciamos los campos tras registrarse con éxito
+    await fetch(`${BASE_URL}/alumnos/${idKey}.json`, { method: 'PUT', body: JSON.stringify(nuevo) });
+    await fetch(`${BASE_URL}/preautorizados/${safeKey}.json`, { method: 'PATCH', body: JSON.stringify({ registrado: true }) });
+    
+    document.getElementById('modal-confirm').classList.remove('active');
+    pendingRegisterData = null;
+    
     document.getElementById('r-name').value = "";
     document.getElementById('r-email').value = "";
-    document.getElementById('r-total').value = "4";
 
-    // Espera a que el usuario pulse "Aceptar" y entonces cambia a la pantalla de inicio
-    await customAlert("¡Cuenta creada con éxito!"); 
+    await customAlert("¡Cuenta creada con éxito! Ya puedes iniciar sesión."); 
     goTo('s-login');
 }
 
+// ==============================================
+// RESTO DEL SISTEMA (AJUSTES, MAIN, ALGORITMO)
+// ==============================================
 function openSetupScreen(isFirstTime) {
     const slider = document.getElementById('e-slider');
     slider.max = currentUser.capacidad;
@@ -442,10 +518,7 @@ function openSetupScreen(isFirstTime) {
 function handleSliderChange(val) {
     document.getElementById('e-slider-val').innerText = val;
     const btn = document.getElementById('btn-save-config');
-    
-    // Forzamos a que sea un número seguro para evitar bloqueos del slider
     const maxPermitido = parseInt(currentUser.invitadosTotales) || 0;
-    
     if (parseInt(val) > maxPermitido) { 
         btn.disabled = true; 
         btn.style.opacity = "0.4"; 
@@ -482,26 +555,14 @@ async function renderMain() {
     const misSols = await rs.json() || {};
     const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
-if (currentUser.front >= currentUser.invitadosTotales) {
-container.innerHTML = `
-<div class="success-box">
-<p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-<p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-</div>`;
-return;
-}
-
-// 2. CONDICIÓN: TIENE HUECOS PROPIOS SIN USAR
-if (libresMios > 0) {
-container.innerHTML = `
-<div class="info-box">
-<p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
-<p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
-</div>`;
-return;
-}
-
-  
+    if (currentUser.front >= currentUser.invitadosTotales) {
+        container.innerHTML = `<div class="success-box">🎉 <b>Cupo completo</b></div>`;
+        return;
+    }
+    if (libresMios > 0) {
+        container.innerHTML = `<div class="info-box">📍 <b>Tienes ${libresMios} asientos libres.</b></div>`;
+        return;
+    }
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     Object.values(todos).forEach(a => {
