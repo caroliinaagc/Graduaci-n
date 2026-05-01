@@ -75,7 +75,7 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
         </button>
       </div>
 
-      <!-- NUEVO: LISTA DE ALUMNOS AUTORIZADOS -->
+      <!-- LISTA DE ALUMNOS AUTORIZADOS -->
       <div style="background: #fff; border: 1px solid var(--border); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
         <p style="margin-bottom: 15px; font-size: 14px; color: var(--ink); font-weight: bold;">Usuarios Autorizados</p>
         <div id="admin-users-list" style="max-height: 250px; overflow-y: auto; text-align: left;">
@@ -144,10 +144,6 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
   <div id="s-setup" class="screen">
     <div class="card">
       <h3 id="setup-title" style="margin-bottom:20px; text-align:center;">Configurar Asientos</h3>
-      <div id="edit-name-section" style="display:none; margin-bottom:20px;">
-        <label class="form-label">Tu nombre</label>
-        <input class="form-input" id="e-name" type="text">
-      </div>
       <div class="slider-box">
         <p style="font-size:14px;">¿Cuántos invitados vas a sentar delante?</p>
         <input type="range" id="e-slider" min="0" max="4" value="0" step="1" oninput="handleSliderChange(this.value)">
@@ -620,14 +616,11 @@ function openSetupScreen(isFirstTime) {
     document.getElementById('e-max-label').innerText = currentUser.capacidad;
     if(isFirstTime) {
         document.getElementById('setup-title').innerText = "¡Bienvenido!";
-        document.getElementById('edit-name-section').style.display = "none";
         document.getElementById('extra-btns').style.display = "none";
         slider.value = Math.min(currentUser.capacidad, currentUser.invitadosTotales);
     } else {
         document.getElementById('setup-title').innerText = "Ajustes";
-        document.getElementById('edit-name-section').style.display = "block";
         document.getElementById('extra-btns').style.display = "block";
-        document.getElementById('e-name').value = currentUser.nombre;
         slider.value = currentUser.front;
     }
     handleSliderChange(slider.value);
@@ -651,9 +644,9 @@ function openEdit() { openSetupScreen(false); }
 
 async function saveConfig() {
     const newFront = parseInt(document.getElementById('e-slider').value);
-    const newName = document.getElementById('e-name').value || currentUser.nombre;
+    // Hemos quitado la actualización del nombre, solo se actualiza el slider y config.
     await fetch(`${BASE_URL}/alumnos/${currentUser.email}.json`, {
-        method: 'PATCH', body: JSON.stringify({ front: newFront, nombre: newName, configured: true })
+        method: 'PATCH', body: JSON.stringify({ front: newFront, configured: true })
     });
     showToast("Configuración guardada");
     goTo('s-main');
@@ -675,23 +668,23 @@ async function renderMain() {
     const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
     // 1. CONDICIÓN: TIENE EL CUPO LLENO
-    if (currentUser.front >= currentUser.invitadosTotales) {
-    container.innerHTML = `
-    <div class="success-box">
-    <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-    <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-    </div>`;
-    return;
-    }
-    // 2. CONDICIÓN: TIENE HUECOS PROPIOS SIN USAR
-    if (libresMios > 0) {
-    container.innerHTML = `
-    <div class="info-box">
-    <p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
-    <p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
-    </div>`;
-    return;
-    }
+if (currentUser.front >= currentUser.invitadosTotales) {
+container.innerHTML = `
+<div class="success-box">
+<p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
+<p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
+</div>`;
+return;
+}
+// 2. CONDICIÓN: TIENE HUECOS PROPIOS SIN USAR
+if (libresMios > 0) {
+container.innerHTML = `
+<div class="info-box">
+<p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
+<p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
+</div>`;
+return;
+}
 
   
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
