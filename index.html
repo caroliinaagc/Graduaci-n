@@ -96,14 +96,22 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
   <div id="s-register" class="screen">
     <div class="card">
       <h3 style="margin-bottom:20px">Registrar Usuario</h3>
-      <div class="form-group"><label class="form-label">Nombre y Apellidos</label><input class="form-input" id="r-name" type="text" placeholder="Tal como te lo dio el Comité"></div>
+      
       <div class="form-group">
-        <label class="form-label">Elige un Identificador (Contraseña)</label>
+        <label class="form-label" style="margin-bottom: 2px;">Nombre y Apellidos</label>
+        <p style="font-size: 11px; color: gray; margin-bottom: 8px;">Recuerda que debes escribir tu nombre completo</p>
+        <input class="form-input" id="r-name" type="text" placeholder="Ej.: Ana Fernández Alonso">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom: 2px;">Identificador</label>
+        <p style="font-size: 11px; color: gray; margin-bottom: 8px;">No compartas este identificador con nadie</p>
         <div style="display: flex; gap: 8px;">
-          <input class="form-input" id="r-email" type="text" placeholder="Crea tu código único">
+          <input class="form-input" id="r-email" type="text" placeholder="Elige tu identificador personal">
           <button class="btn" style="width: auto; padding: 0 15px;" onclick="generateID()">Generar</button>
         </div>
       </div>
+      
       <!-- Eliminada la casilla de invitados manual -->
       <button class="btn btn-gold" onclick="showConfirmRegister()">Registrar</button>
       <button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
@@ -555,14 +563,26 @@ async function renderMain() {
     const misSols = await rs.json() || {};
     const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
-    if (currentUser.front >= currentUser.invitadosTotales) {
-        container.innerHTML = `<div class="success-box">🎉 <b>Cupo completo</b></div>`;
-        return;
-    }
-    if (libresMios > 0) {
-        container.innerHTML = `<div class="info-box">📍 <b>Tienes ${libresMios} asientos libres.</b></div>`;
-        return;
-    }
+// 1. CONDICIÓN: TIENE EL CUPO LLENO
+if (currentUser.front >= currentUser.invitadosTotales) {
+container.innerHTML = `
+<div class="success-box">
+<p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
+<p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
+</div>`;
+return;
+}
+// 2. CONDICIÓN: TIENE HUECOS PROPIOS SIN USAR
+if (libresMios > 0) {
+container.innerHTML = `
+<div class="info-box">
+<p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
+<p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
+</div>`;
+return;
+}
+
+  
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
     const todos = await r2.json() || {};
     Object.values(todos).forEach(a => {
