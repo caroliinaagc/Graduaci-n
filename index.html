@@ -65,7 +65,7 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
     <div class="card" style="text-align: center; max-width: 450px; margin: 20px auto;">
       <h2 style="font-family:'DM Serif Display'; margin-bottom: 25px;">Panel de Administrador</h2>
       
-      <!-- NUEVO: ZONA DE CREAR ALUMNOS AUTORIZADOS -->
+      <!-- ZONA DE CREAR ALUMNOS AUTORIZADOS -->
       <div style="background: #eff6ff; border: 1px dashed var(--blue); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
         <p style="margin-bottom: 15px; font-size: 14px; color: var(--blue); font-weight: bold;">Añadir Alumno Autorizado</p>
         <input class="form-input" id="a-name" type="text" placeholder="Nombre y Apellidos" style="margin-bottom: 10px;">
@@ -73,6 +73,14 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
         <button class="btn" style="background: var(--blue); color: white; border: none;" onclick="crearUsuarioAdmin()">
           Crear Usuario
         </button>
+      </div>
+
+      <!-- NUEVO: LISTA DE ALUMNOS AUTORIZADOS -->
+      <div style="background: #fff; border: 1px solid var(--border); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+        <p style="margin-bottom: 15px; font-size: 14px; color: var(--ink); font-weight: bold;">Usuarios Autorizados</p>
+        <div id="admin-users-list" style="max-height: 250px; overflow-y: auto; text-align: left;">
+          <!-- Aquí se cargarán los usuarios por JS -->
+        </div>
       </div>
 
       <!-- BOTÓN DE RESCATAR DATOS -->
@@ -112,7 +120,6 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
         </div>
       </div>
       
-      <!-- Eliminada la casilla de invitados manual -->
       <button class="btn btn-gold" onclick="showConfirmRegister()">Registrar</button>
       <button class="btn" style="margin-top:10px" onclick="goTo('s-login')">Cancelar</button>
     </div>
@@ -231,7 +238,7 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; background: var
 const BASE_URL = "https://graduacion2026-1faf3-default-rtdb.firebaseio.com";
 const ADMIN_PASS = "123456"; 
 let currentUser = null;
-let pendingRegisterData = null; // Variable temporal para el registro
+let pendingRegisterData = null; 
 
 // ==============================================
 // SISTEMA DE REFRESCO ("ESTILO GMAIL")
@@ -310,6 +317,40 @@ function getSafeName(name) {
 // ==============================================
 // FUNCIONES DEL ADMINISTRADOR
 // ==============================================
+async function cargarListaAdmin() {
+    const listDiv = document.getElementById('admin-users-list');
+    listDiv.innerHTML = "<p style='font-size:12px; text-align:center;'>Cargando lista...</p>";
+
+    const r = await fetch(`${BASE_URL}/preautorizados.json`);
+    const data = await r.json();
+
+    if (!data) {
+        listDiv.innerHTML = "<p style='font-size:13px; text-align:center; color:gray;'>No hay alumnos autorizados todavía.</p>";
+        return;
+    }
+
+    listDiv.innerHTML = "";
+    Object.keys(data).forEach(key => {
+        const u = data[key];
+        const d = document.createElement('div');
+        d.style = "border-bottom: 1px solid var(--border); padding: 10px 0; display: flex; justify-content: space-between; align-items: center;";
+
+        const status = u.registrado ? "<span style='color:var(--green); font-size:10px; font-weight:bold;'>Registrado</span>" : "<span style='color:var(--orange); font-size:10px; font-weight:bold;'>Pendiente</span>";
+
+        d.innerHTML = `
+          <div>
+            <p style="font-size: 14px; font-weight: 600; color:var(--ink); margin-bottom:2px;">${u.nombre}</p>
+            <p style="font-size: 12px; color: gray;">${u.invitadosTotales} invitados · ${status}</p>
+          </div>
+          <div style="display:flex; gap:5px;">
+            <button class="btn" style="padding: 5px 10px; font-size: 12px; width:auto; border-radius:6px;" onclick="editarInvitadosAdmin('${key}', '${u.nombre}')">✏️</button>
+            <button class="btn" style="padding: 5px 10px; font-size: 12px; width:auto; border-radius:6px; background:#fee2e2; border-color:#fecaca;" onclick="borrarUsuarioAdmin('${key}', '${u.nombre}')">🗑️</button>
+          </div>
+        `;
+        listDiv.appendChild(d);
+    });
+}
+
 async function crearUsuarioAdmin() {
     const name = document.getElementById('a-name').value.trim();
     const total = parseInt(document.getElementById('a-total').value);
@@ -320,6 +361,15 @@ async function crearUsuarioAdmin() {
     }
     
     const safeKey = getSafeName(name);
+
+    // COMPROBACIÓN ANTI-DUPLICADOS
+    const rCheck = await fetch(`${BASE_URL}/preautorizados/${safeKey}.json`);
+    const exists = await rCheck.json();
+    if(exists) {
+        await customAlert("Este alumno ya está dado de alta en la lista de autorizados.");
+        return;
+    }
+
     const data = { nombre: name, invitadosTotales: total, registrado: false };
     
     await fetch(`${BASE_URL}/preautorizados/${safeKey}.json`, { method: 'PUT', body: JSON.stringify(data) });
@@ -327,6 +377,66 @@ async function crearUsuarioAdmin() {
     document.getElementById('a-name').value = "";
     document.getElementById('a-total').value = "4";
     showToast("Alumno autorizado añadido correctamente.");
+    cargarListaAdmin();
+}
+
+async function editarInvitadosAdmin(safeKey, nombre) {
+    const nuevoTotalRaw = await customPrompt(`¿Cuántos invitados tendrá ${nombre}?`, "", "number");
+    if (nuevoTotalRaw === null) return;
+    
+    const nuevoTotal = parseInt(nuevoTotalRaw);
+    if (isNaN(nuevoTotal) || nuevoTotal < 0) {
+        await customAlert("Número no válido.");
+        return;
+    }
+
+    // Actualizar en la lista de autorizados
+    await fetch(`${BASE_URL}/preautorizados/${safeKey}.json`, {
+        method: 'PATCH',
+        body: JSON.stringify({ invitadosTotales: nuevoTotal })
+    });
+
+    // Si ya estaba registrado, actualizar también su cuenta real
+    const r = await fetch(`${BASE_URL}/alumnos.json`);
+    const alumnos = await r.json();
+    if(alumnos) {
+        for(let idKey in alumnos) {
+            if(alumnos[idKey].nombre === nombre) {
+                await fetch(`${BASE_URL}/alumnos/${idKey}.json`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ invitadosTotales: nuevoTotal })
+                });
+                break;
+            }
+        }
+    }
+
+    showToast("Número de invitados actualizado");
+    cargarListaAdmin();
+}
+
+async function borrarUsuarioAdmin(safeKey, nombre) {
+    if (await customConfirm(`¿Estás seguro de que quieres borrar a ${nombre}? Si ya estaba registrado, perderá su cuenta y sus datos.`)) {
+        
+        // Borrar de autorizados
+        await fetch(`${BASE_URL}/preautorizados/${safeKey}.json`, { method: 'DELETE' });
+
+        // Borrar cuenta y solicitudes si ya estaba registrado
+        const r = await fetch(`${BASE_URL}/alumnos.json`);
+        const alumnos = await r.json();
+        if(alumnos) {
+            for(let idKey in alumnos) {
+                if(alumnos[idKey].nombre === nombre) {
+                    await fetch(`${BASE_URL}/alumnos/${idKey}.json`, { method: 'DELETE' });
+                    await fetch(`${BASE_URL}/solicitudes/${idKey}.json`, { method: 'DELETE' });
+                    break;
+                }
+            }
+        }
+
+        showToast("Usuario borrado");
+        cargarListaAdmin();
+    }
 }
 
 async function rescatarDatos() {
@@ -395,6 +505,7 @@ async function doLogin() {
         if(pass === ADMIN_PASS) {
             currentUser = { email: "Administrador", nombre: "Administrador" };
             goTo('s-admin');
+            cargarListaAdmin(); // Carga la lista al entrar
         } else {
             await customAlert("Contraseña incorrecta.");
         }
@@ -563,24 +674,24 @@ async function renderMain() {
     const misSols = await rs.json() || {};
     const emailsBloqueados = Object.values(misSols).map(s => s.targetEmail);
 
-// 1. CONDICIÓN: TIENE EL CUPO LLENO
-if (currentUser.front >= currentUser.invitadosTotales) {
-container.innerHTML = `
-<div class="success-box">
-<p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
-<p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
-</div>`;
-return;
-}
-// 2. CONDICIÓN: TIENE HUECOS PROPIOS SIN USAR
-if (libresMios > 0) {
-container.innerHTML = `
-<div class="info-box">
-<p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
-<p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
-</div>`;
-return;
-}
+    // 1. CONDICIÓN: TIENE EL CUPO LLENO
+    if (currentUser.front >= currentUser.invitadosTotales) {
+    container.innerHTML = `
+    <div class="success-box">
+    <p style="font-size: 18px; margin-bottom: 5px;">🎉 <b>Cupo completo</b></p>
+    <p style="font-size: 13px; opacity: 0.8;">Todos tus invitados tienen ya asiento delante.</p>
+    </div>`;
+    return;
+    }
+    // 2. CONDICIÓN: TIENE HUECOS PROPIOS SIN USAR
+    if (libresMios > 0) {
+    container.innerHTML = `
+    <div class="info-box">
+    <p style="font-size: 16px; margin-bottom: 8px;">📍 <b>Asigna tus huecos</b></p>
+    <p style="font-size: 13px; opacity: 0.9;">Todavía tienes <b>${libresMios}</b> asientos libres en tu propiedad. Úsalos para tus invitados en <b>Ajustes</b> antes de pedir a otros compañeros.</p>
+    </div>`;
+    return;
+    }
 
   
     const r2 = await fetch(`${BASE_URL}/alumnos.json`);
